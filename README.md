@@ -10,6 +10,9 @@ composer install
 ```
 ## How to use
 Run index.php
+
+First step, test data to inserts to table categories different which driver is used (mysql, sqlite)
+
 ```php
 $runner = new Runner();
 $result = $runner::run();
@@ -21,6 +24,8 @@ $runner = new Runner();
 $result = $runner::run2();
 dump($result);
 ```
+
+Output in html format ul > li ....
 
 ```php
 $runner = new Runner();
