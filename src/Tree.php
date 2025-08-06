@@ -77,4 +77,10 @@ class Tree extends DomainObject
         return $this->hasChild;
     }
 
+    public function save()
+    {
+        ObjectWatcher::instance()->performOperations();
+        
+    }
+
 }

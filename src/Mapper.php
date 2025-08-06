@@ -18,7 +18,7 @@ abstract class Mapper
     public function find(int $id): DomainObject
     {
         $old = $this->getFromMap($id);
-      
+     
         if (! is_null($old)) {
             return $old;
         }
@@ -54,7 +54,7 @@ abstract class Mapper
         return ObjectWatcher::add($obj);
     }
 
-/* listing 13.26 */
+    /* listing 13.26 */
 
     // Mapper
 
@@ -71,7 +71,7 @@ abstract class Mapper
 
         return $obj;
     }
-/* /listing 13.26 */
+    /* /listing 13.26 */
 
     public function insert(DomainObject $obj): void
     {

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tree;
 use Tree\Conf;
+use Tree\Setup\SetupDb;
 
-class Runner
+class Runner extends SetupDb
 {
     public static function run()
     {
-        self::setUp();
+        self::setUp('sqlite');
         $treeMapper = new TreeMapper();
 
         $tree = new Tree(-1, "Parent 1");
         $treeMapper->insert($tree);
-    
         $tree = $treeMapper->find(1); 
 
         $ch1 = new Child(-1, 'Child 1 The Space Upstairs', $tree->getId());
         $ch1->setName('Child 1 The Space');
-        
+    
         $ch2 = new Child(-1, 'Child 3', $tree->getId());
         $ch3 = new Child(-1, 'Child 4', $tree->getId());
         $ch2->addChild($ch3);
@@ -33,11 +33,32 @@ class Runner
 
         $tree->addChild($ch1);
         //dump($tree);
-        ObjectWatcher::instance()->performOperations();
+        //ObjectWatcher::instance()->performOperations();
+        $tree->save();
         
         $treeMapper = new TreeMapper('categories', ['html' => false]);
         $tree = $treeMapper->getTree(1);
         return $tree;
+    }
+
+    
+    public function run5()
+    {
+        
+        $this->setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(2);
+        dump($tree);
+
+    }
+
+    public function run6()
+    {
+
+        $this->setSqlite();
+        $treeMapper = new TreeMapper('categories',['html'=>true]);
+        $tree = $treeMapper->getTree(2);
+        print $tree;
     }
 
     public static function run2()
@@ -46,7 +67,7 @@ class Runner
         $options = parse_ini_file($config, true);
         Registry::reset();
         $reg = Registry::instance();
-        $conf = new Conf($options['config']);
+        $conf = new Conf($options['sqlite']);
         $reg->setConf($conf);
         $reg = Registry::instance();
         $dsn = $reg->getDSN();
@@ -96,46 +117,4 @@ class Runner
         dump($tree);
     }
 
-    public static function setUp()
-    {
-        $config = __DIR__ . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        Registry::reset();
-        $reg = Registry::instance();
-        $conf = new Conf($options['mysql']);
-        $reg->setConf($conf);
-        $reg = Registry::instance();
-        $dsn = $reg->getDSN();
-
-        if (is_null($dsn)) {
-            throw new AppException("No DSN");
-        }
-        
-        if ($conf->get('driver') == 'mysql') {
-            $username = $conf->get('username');
-            $password = $conf->get('password');
-        }
-        $pdo = new \PDO($dsn, $username ?? null, $password ?? null);
-        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $autoincrement = "AUTOINCREMENT";
-
-        if ($conf->get('driver') == 'mysql') {
-            $pdo->query("DROP TABLE IF EXISTS categories");
-            $pdo->query("CREATE TABLE `categories` (
-                `id` INT AUTO_INCREMENT PRIMARY KEY,
-                `name` varchar(64) DEFAULT NULL,
-                `parent_id` int DEFAULT NULL,
-                `lft` int DEFAULT NULL,
-                `rgt` int DEFAULT NULL,
-                `lvl` int DEFAULT NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
-                 
-        } else {
-            $pdo->query("DROP TABLE IF EXISTS categories");
-            $pdo->query("CREATE TABLE categories 
-            ( id INTEGER PRIMARY KEY $autoincrement, name TEXT, parent_id INTEGER REFERENCES categories, left INTEGER, rgt INTEGER, lvl INTEGER)");
-        }
-       /*  $pdo->query("INSERT into categories ( name,parent_id,left, rgt,lvl ) values ('Parent', 0, 0, 1, 1)"); */
-        
-    }
 }

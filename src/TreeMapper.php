@@ -11,7 +11,7 @@ class TreeMapper extends Mapper
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
     private \PDOStatement $insertStmt;
-    
+    private $parentId;
     public function __construct(private $table = 'categories', private $options = array())
     {
         parent::__construct();
@@ -139,7 +139,7 @@ class TreeMapper extends Mapper
 
     }
 
-    function makeParentChildRelations(&$inArray, &$outArray, $currentParentId = 0)
+    function makeParentChildRelations(&$inArray, &$outArray, $currentParentId = null)
     {
         if (!is_array($inArray)) {
             return;
@@ -147,9 +147,12 @@ class TreeMapper extends Mapper
         if (!is_array($outArray)) {
             return;
         }
-        if($currentParentId == NULL) $currentParentId = 0;
-        foreach ($inArray as $key => $tuple) {
+
+           
+        foreach ($inArray as $tuple) {
+           
             if ($tuple['parent_id'] == $currentParentId) {
+
                 $tuple['children'] = array();
                 $this->makeParentChildRelations($inArray, $tuple['children'], $tuple['id']);
                 $outArray[] = $tuple;
@@ -157,8 +160,10 @@ class TreeMapper extends Mapper
         }
     }
 
+    
     public function getTree($id)
     {
+        $this->parentId = $id;
         $this->selectTreeStmt->execute([$id]);
         $raws =  $this->selectTreeStmt->fetchAll();
         $childMapper = new ChildMapper();
@@ -171,9 +176,11 @@ class TreeMapper extends Mapper
         }
            
         $parentChild = array();
+        $raws[0]['parent_id'] = null;
+   
         $this->makeParentChildRelations($raws, $parentChild);
-        //dump($parentChild);
-      
+       
+
         if(in_array('html', $this->options) && $this->options['html'] === true) {
          
             return Html::generate($parentChild);
@@ -181,14 +188,14 @@ class TreeMapper extends Mapper
             return $parentChild;
         } else {
             foreach($parentChild as $raw) {
-                //dump($raw);
-                if($raw['parent_id'] == NULL) {
+               
+                if($raw['parent_id'] == NULL || $raw['parent_id'] == $raws[0]['id']) {
                    //print 'parent_id++++' . PHP_EOL;
                     
                    $obj = $this->doCreateObject($raw, false);
                    //print '<br>++++' . PHP_EOL;
-                } 
-                
+                }
+               
                 if(count($raw['children']) > 0) {
                    // print 'count($raw->children)' . PHP_EOL;
                     //dump($obj);
@@ -213,10 +220,10 @@ class TreeMapper extends Mapper
     public function generateChilds($raw, $obj, $id, $parentChild = null) {
         //$getchild->add($child);
         //print '<br>dump($obj) <<<<' . PHP_EOL;
-        //dump($parentChild);
+        //dump($this->parentId);
         foreach ($raw['children'] as $rawchild) {
 
-             if (!$parentChild && $id == 1) {
+             if (!$parentChild && $id == $this->parentId) {
                 $parentChild = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id']);
                 $parentChild->hasParent = true;
             } else {
@@ -226,7 +233,7 @@ class TreeMapper extends Mapper
             } 
                    
             if (count($rawchild['children'])) {
-                $this->generateChilds($rawchild, $obj, $rawchild['id'], $id == 1 ? $parentChild : $child);
+                $this->generateChilds($rawchild, $obj, $rawchild['id'], $id == $this->parentId ? $parentChild : $child);
             }
 
         }
@@ -241,4 +248,19 @@ class TreeMapper extends Mapper
         */
     }
 
+    //TODO another way
+    function buildTree(array $elements, $parentId = null)
+    {
+        $branch = [];
+        foreach ($elements as $element) {
+            if ($element['parent_id'] === $parentId) {
+                $children = $this->buildTree($elements, $element['id']);
+                if ($children) {
+                    $element['children'] = $children;
+                }
+                $branch[] = $element;
+            }
+        }
+        return $branch;
+    }
 }
