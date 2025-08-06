@@ -40,6 +40,38 @@ abstract class Mapper
         return $object;
     }
 
+    public function findBy(array $criteria): DomainObject
+    {
+
+        //TODO 0708
+        /* $old = $this->getFromMap($id);
+
+        if (! is_null($old)) {
+            return $old;
+        }
+        */
+
+        $newcriteria = array_values($criteria);
+        $stmp = $this->selectBystmt($criteria);
+        $stmp->bindParam(':name', $newcriteria[0], \PDO::PARAM_STR);
+        $stmp->execute();
+
+        $raw = $stmp->fetch();
+        $stmp->closeCursor();
+        dump($raw);
+        if (! is_array($raw)) {
+            return null;
+        }
+
+        if (! isset($raw['id'])) {
+            return null;
+        }
+
+        $object = $this->createObject($raw);
+
+        return $object;
+    }
+
     private function getFromMap($id): ?DomainObject
     {
        
@@ -94,4 +126,5 @@ abstract class Mapper
     abstract protected function doCreateObject(array $raw): DomainObject;
     abstract protected function doInsert(DomainObject $object): void;
     abstract protected function selectStmt(): \PDOStatement;
+    abstract protected function selectByStmt(array $criteria): \PDOStatement;
 }

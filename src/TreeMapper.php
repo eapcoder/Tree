@@ -7,6 +7,7 @@ namespace Tree;
 class TreeMapper extends Mapper
 {
     private \PDOStatement $selectStmt;
+    private \PDOStatement $selectByStmt;
     private \PDOStatement $selectTreeStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
@@ -15,6 +16,9 @@ class TreeMapper extends Mapper
     public function __construct(private $table = 'categories', private $options = array())
     {
         parent::__construct();
+        
+
+
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE id=?"
         );
@@ -94,7 +98,24 @@ class TreeMapper extends Mapper
     public function selectStmt(): \PDOStatement
     {
         return $this->selectStmt;
+        
     }
+
+    public function selectByStmt($criteria): \PDOStatement
+    {
+        $sel = '';
+        foreach($criteria as $key => $item) {
+            $sel .= $key .'=:'. $key.','; 
+        }
+        $sel = !empty($sel) ? substr($sel, 0, -1) : '';
+      
+        $this->selectByStmt = $this->pdo->prepare(
+            "SELECT * FROM $this->table WHERE $sel"
+        );
+        dump($this->selectByStmt);
+        return $this->selectByStmt;
+    }
+
 
     public function selectAllStmt(): \PDOStatement
     {

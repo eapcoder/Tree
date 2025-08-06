@@ -13,10 +13,15 @@ class ChildMapper extends Mapper
     private \PDOStatement $insertStmt;
     private \PDOStatement $findByTreeStmt;
     private \PDOStatement $updateLvlStmt;
+    private \PDOStatement $selectByStmt;
 
     public function __construct()
     {
         parent::__construct();
+        $this->selectByStmt = $this->pdo->prepare(
+            "SELECT * FROM categories WHERE id=?"
+        );
+
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM categories WHERE id=?"
         );
@@ -104,6 +109,11 @@ class ChildMapper extends Mapper
     protected function selectAllStmt(): \PDOStatement
     {
         return $this->selectAllStmt;
+    }
+
+    protected function selectByStmt($criteria): \PDOStatement
+    {
+        return $this->selectByStmt;
     }
 
     public function findByTree($vid): Child

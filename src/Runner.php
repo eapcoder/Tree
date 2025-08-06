@@ -10,7 +10,7 @@ class Runner extends SetupDb
 {
     public static function run()
     {
-        self::setUp('sqlite');
+        self::setUp('mysql');
         $treeMapper = new TreeMapper();
 
         $tree = new Tree(-1, "Parent 1");
@@ -44,12 +44,32 @@ class Runner extends SetupDb
     
     public function run5()
     {
+        $this->setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(1);
+        dump($tree);
+
+    }
+
+    public function run8()
+    {
+        $this->setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->findBy(['name'=> 'Child 1 The Space']);
+        dump($tree);
         
+    }
+
+
+    public function run7()
+    {
         $this->setMysql();
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(2);
-        dump($tree);
-
+        //dump($tree->getChilds());
+        foreach ($tree->getChilds() as $item) {
+            dump($item->getTree());
+        }
     }
 
     public function run6()
