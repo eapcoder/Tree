@@ -18,6 +18,7 @@ class Child extends DomainObject
 
     public function __construct(int $id, private string $name, private int $parent_id, private ?int $lvl = null, private ?Tree $tree = null)
     {
+        
         $this->name = $name;
         $this->parent_id = $parent_id;
         
@@ -33,6 +34,7 @@ class Child extends DomainObject
     {
         $this->getChilds()->add($child);
         if(!empty($this->getTree())) {
+           
             $child->setTree($this->getTree());
             
         }
@@ -53,6 +55,8 @@ class Child extends DomainObject
 
     public function setTree(Tree $tree): void
     {
+
+        stack_trace();
         $this->tree = $tree;
         $this->markDirty();
     }

@@ -62,7 +62,7 @@ class ObjectWatcher
     public static function addDirty(DomainObject $obj): void
     {
         $inst = self::instance();
-
+     
         if (! in_array($obj, $inst->new, true)) {
             $inst->dirty[$inst->globalKey($obj)] = $obj;
         }
@@ -91,17 +91,24 @@ class ObjectWatcher
 
     public function performOperations(): void
     {
+        
         foreach ($this->dirty as $key => $obj) {
+           
             $obj->getFinder()->update($obj);
         }
        
         foreach ($this->new as $key => $obj) {
-
+            dump($obj);
             if ($obj instanceof Tree) {
                 /* if($obj->getId() <= 0)  */
                
                 $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
             } else {
+                $this->performOperationsForChilds($obj, $lvl = 1, $obj->getParent());
+                /* if ($obj->hasChilds()) {
+                    $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getParent());
+
+                } */
             }
             if ($obj->hasChilds()) {
                 //$this->performOperationsForChilds($obj->getChilds(), $lvl = 1);
@@ -119,6 +126,7 @@ class ObjectWatcher
     public function performOperationsForChilds($childs, $lvl, $parent_id): void
     {
         if ($childs instanceof Child) {
+         
             $lvl = $lvl + 1;
             
             $childs->setLvl($lvl);

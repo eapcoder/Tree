@@ -70,10 +70,13 @@ class TreeMapper extends Mapper
 
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
+       
         $obj = new Tree((int)$array['id'], $array['name']);
+       
         if($withChild) {
             $childMapper = new ChildMapper();
             $child = $childMapper->findByTree($array['id']);
+            
             $obj->addChild($child);
         }
 

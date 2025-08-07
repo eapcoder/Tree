@@ -49,10 +49,26 @@ class Runner extends SetupDb
     public static function run5()
     {
         self::setMysql();
-        $treeMapper = new TreeMapper('categories', ['html' => true]);
+        $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(1);
         dump($tree);
+        dump($tree->getId());
+        $new = new Child(-1, 'New Child', $tree->getId());
+        //$new->setName('New Child space');
+        $tree->addChild($new);
+        $tree->save();
 
+       
+
+    }
+
+    public static function run6()
+    {
+
+        self::setMysql();
+        $treeMapper = new TreeMapper('categories', ['html' => true]);
+        $tree = $treeMapper->getTree(1);
+        echo $tree;
     }
 
     public static function run8()
@@ -78,15 +94,7 @@ class Runner extends SetupDb
     }
 
   
-    public static function run6()
-    {
-
-        self::setSqlite();
-        $treeMapper = new TreeMapper('categories',['html'=>true]);
-        $tree = $treeMapper->getTree(2);
-        return $tree;
-    }
-
+  
     public static function run2()
     {
         self::setSqlite();

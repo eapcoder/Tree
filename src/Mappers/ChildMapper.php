@@ -93,14 +93,14 @@ class ChildMapper extends Mapper
         if (! $tree && !$object->hasParent) {
             throw new AppException("cannot save without prent tree");
         }
-        
+      
         $values = [ $object->getName(), $object->getParent(), $object->getLvl() ];
         $this->insertStmt->execute($values);
         $id = $this->pdo->lastInsertId();
         $object->setId((int)$id);
     }
 
-    protected function update(DomainObject $object): void
+    public function update(DomainObject $object): void
     {
         $values = [$object->getname(), $object->getid(), $object->getId()];
         $this->updateStmt->execute($values);
