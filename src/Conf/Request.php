@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Conf;
 
 abstract class Request
 {

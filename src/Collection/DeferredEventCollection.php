@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tree;
 
+use Tree\Collection\EventCollection;
+use Tree\Mappers\Mapper;
+
 /* listing 13.31 */
 class DeferredEventCollection extends EventCollection
 {
@@ -28,4 +31,3 @@ class DeferredEventCollection extends EventCollection
         $this->run = true;
     }
 }
-/* /listing 13.31 */

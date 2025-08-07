@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Mappers;
+
+use Tree\Child;
+use Tree\Collection\ChildCollection;
+use Tree\DomainObject;
+use Tree\Exception\AppException;
 
 class ChildMapper extends Mapper
 {

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tree;
 
-/* listing 13.25 */
+use Tree\Mappers\Mapper;
+
 abstract class DomainObject
 {
     public function __construct(private int $id = -1)

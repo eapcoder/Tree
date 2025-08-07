@@ -1,22 +1,16 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Tree;
 
 class ObjectWatcher
 {
-    /* listing 13.24 */
-
-    // ObjectWatcher
-
+  
     private array $all = [];
     private array $dirty = [];
     private array $new = [];
     private array $delete = []; // unused in this example
     private static ?ObjectWatcher $instance = null;
-
-    /* /listing 13.24 */
 
     private function __construct() {}
 
@@ -51,7 +45,7 @@ class ObjectWatcher
     {
         $inst = self::instance();
         $key = "{$classname}.{$id}";
-
+       
         if (isset($inst->all[$key])) {
             return $inst->all[$key];
         }
@@ -59,7 +53,6 @@ class ObjectWatcher
         return null;
     }
 
-    /* listing 13.24 */
     public static function addDelete(DomainObject $obj): void
     {
         $inst = self::instance();
@@ -101,14 +94,11 @@ class ObjectWatcher
         foreach ($this->dirty as $key => $obj) {
             $obj->getFinder()->update($obj);
         }
-
        
         foreach ($this->new as $key => $obj) {
 
-
             if ($obj instanceof Tree) {
                 /* if($obj->getId() <= 0)  */
-               
                
                 $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
             } else {
@@ -118,8 +108,6 @@ class ObjectWatcher
 
             } else {
             }
-
-            //$obj->getFinder()->insert($obj);
 
             print "inserting " . $obj->getName() . "\n";
         }

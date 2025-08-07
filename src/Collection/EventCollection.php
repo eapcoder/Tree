@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Collection;
+
+use Tree\Event;
 
 class EventCollection extends Collection
 {

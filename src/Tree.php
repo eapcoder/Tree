@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tree;
 
-
+use Tree\Collection\ChildCollection;
+use Tree\Conf\Registry;
+use Tree\Mappers\TreeMapper;
 
 class Tree extends DomainObject
 {

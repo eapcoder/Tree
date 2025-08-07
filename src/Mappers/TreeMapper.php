@@ -1,8 +1,14 @@
 <?php
-
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Mappers;
+
+use Tree\Child;
+use Tree\Collection\TreeCollection;
+use Tree\DomainObject;
+use Tree\Exception\AppException;
+use Tree\Helpers\Html;
+use Tree\Tree;
 
 class TreeMapper extends Mapper
 {
@@ -17,7 +23,6 @@ class TreeMapper extends Mapper
     {
         parent::__construct();
         
-
 
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE id=?"
@@ -112,7 +117,7 @@ class TreeMapper extends Mapper
         $this->selectByStmt = $this->pdo->prepare(
             "SELECT * FROM $this->table WHERE $sel"
         );
-        dump($this->selectByStmt);
+       // dump($this->selectByStmt);
         return $this->selectByStmt;
     }
 
@@ -201,8 +206,8 @@ class TreeMapper extends Mapper
    
         $this->makeParentChildRelations($raws, $parentChild);
        
-
-        if(in_array('html', $this->options) && $this->options['html'] === true) {
+        
+        if(isset($this->options['html']) && $this->options['html'] === true) {
          
             return Html::generate($parentChild);
         } else if(in_array('simpleArray', $this->options) && $this->options['simpleArray'] === true) {

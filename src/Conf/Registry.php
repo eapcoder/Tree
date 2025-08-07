@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Conf;
 
-use Tree\Conf;
-use Tree\Request;
+
+use Tree\Conf\Request;
 use Tree\ApplicationHelper;
+use Tree\Collection\ChildCollection;
+use Tree\Collection\EventCollection;
+use Tree\Collection\TreeCollection;
+use Tree\Mappers\ChildMapper;
+use Tree\Mappers\TreeMapper;
 
-class Registry
+class Registry extends FactoryMapper
 {
     private static $instance = null;
     private ?Request $request = null;
@@ -124,20 +129,6 @@ class Registry
 
     }
 
-    public function getTreeMapper(): TreeMapper
-    {
-        return new TreeMapper();
-    }
-
-    public function getChildMapper(): ChildMapper
-    {
-        return new ChildMapper();
-    }
-
-    public function getEventMapper(): EventMapper
-    {
-        return new EventMapper();
-    }
 
     public function getTreeCollection(): TreeCollection
     {
@@ -149,6 +140,7 @@ class Registry
         return new ChildCollection();
     }
 
+    //TODO delete?
     public function getEventCollection(): EventCollection
     {
         return new EventCollection();

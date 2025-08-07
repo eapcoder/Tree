@@ -1,9 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Tree;
-use Tree\Conf;
+
+use Tree\Conf\Conf;
+use Tree\Conf\Registry;
+use Tree\Exception\AppException;
+use Tree\Mappers\TreeMapper;
 use Tree\Setup\SetupDb;
 
 class Runner extends SetupDb
@@ -32,38 +35,40 @@ class Runner extends SetupDb
         $ch1->addChild($ch5);
 
         $tree->addChild($ch1);
-        //dump($tree);
+        
         //ObjectWatcher::instance()->performOperations();
         $tree->save();
-        
-        $treeMapper = new TreeMapper('categories', ['html' => false]);
+      
+        $treeMapper = new TreeMapper('categories', ['simpleArray' => true]);
         $tree = $treeMapper->getTree(1);
+        dump($tree);
         return $tree;
     }
 
     
-    public function run5()
+    public static function run5()
     {
-        $this->setMysql();
-        $treeMapper = new TreeMapper();
+        self::setMysql();
+        $treeMapper = new TreeMapper('categories', ['html' => true]);
         $tree = $treeMapper->find(1);
         dump($tree);
 
     }
 
-    public function run8()
+    public static function run8()
     {
-        $this->setMysql();
+        self::setMysql();
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->findBy(['name'=> 'Child 1 The Space']);
         dump($tree);
+        return $tree;
         
     }
 
 
-    public function run7()
+    public static function run7()
     {
-        $this->setMysql();
+        self::setMysql();
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(2);
         //dump($tree->getChilds());
@@ -72,29 +77,19 @@ class Runner extends SetupDb
         }
     }
 
-    public function run6()
+  
+    public static function run6()
     {
 
-        $this->setSqlite();
+        self::setSqlite();
         $treeMapper = new TreeMapper('categories',['html'=>true]);
         $tree = $treeMapper->getTree(2);
-        print $tree;
+        return $tree;
     }
 
     public static function run2()
     {
-        $config = __DIR__ . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        Registry::reset();
-        $reg = Registry::instance();
-        $conf = new Conf($options['sqlite']);
-        $reg->setConf($conf);
-        $reg = Registry::instance();
-        $dsn = $reg->getDSN();
-
-        if (is_null($dsn)) {
-            throw new AppException("No DSN");
-        }
+        self::setSqlite();
 
         $treeMapper = new TreeMapper('categories',['html'=>false]);
         $cats = $treeMapper->getTree(1);
@@ -108,13 +103,7 @@ class Runner extends SetupDb
 
     public static function run3()
     {
-        $config = __DIR__ . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        Registry::reset();
-        $reg = Registry::instance();
-        $conf = new Conf($options['mysql']);
-        $reg->setConf($conf);
-        $reg = Registry::instance();
+        self::setSqlite();
         $treeMapper = new TreeMapper('categories', ['html' => true]);
         echo $treeMapper->getTree(1);
     }

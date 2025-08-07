@@ -2,7 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+namespace Tree\Mappers;
+
+use Tree\Collection\Collection;
+use Tree\Conf\Registry;
+use Tree\DomainObject;
+use Tree\ObjectWatcher;
+
 
 abstract class Mapper
 {
@@ -40,17 +46,26 @@ abstract class Mapper
         return $object;
     }
 
-    public function findBy(array $criteria): DomainObject
+
+    /**
+     * //TODO Search with criteria, need test
+     * @return DomainObject
+     */
+    public function findBy(array $criteria): DomainObject | null
     {
 
         //TODO 0708
-        /* $old = $this->getFromMap($id);
+        if (! is_int($criteria)) {
+            $uniqidId = uniqid();
+            $old = $this->getFromMap($uniqidId, $findby = true);
+        } else {
+            $old = $this->getFromMap($criteria);
+        }
 
         if (! is_null($old)) {
             return $old;
         }
-        */
-
+        
         $newcriteria = array_values($criteria);
         $stmp = $this->selectBystmt($criteria);
         $stmp->bindParam(':name', $newcriteria[0], \PDO::PARAM_STR);
@@ -58,7 +73,7 @@ abstract class Mapper
 
         $raw = $stmp->fetch();
         $stmp->closeCursor();
-        dump($raw);
+        //dump($raw);
         if (! is_array($raw)) {
             return null;
         }
@@ -72,9 +87,9 @@ abstract class Mapper
         return $object;
     }
 
-    private function getFromMap($id): ?DomainObject
+    private function getFromMap($id, $findBy = false): ?DomainObject
     {
-       
+     
         return ObjectWatcher::exists(
             $this->targetClass(),
             $id

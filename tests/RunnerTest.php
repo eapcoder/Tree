@@ -1,38 +1,59 @@
 <?php
-declare(strict_types=1);
 
-namespace Tree\Setup;
+namespace Tree\TestProject;
 
+
+
+use PHPUnit\Framework\TestCase;
 use Tree\Child;
-use Tree\Exception\AppException;
 use Tree\Conf\Conf;
 use Tree\Conf\Registry;
+use Tree\Exception\AppException;
 use Tree\Mappers\TreeMapper;
+use Tree\Runner;
+use Tree\Setup\SetupDb;
 use Tree\Tree;
 
-class SetupDb {
 
-    public static function setUp($type = 'mysql')
+final class RunnerTest extends TestCase
+{
+
+    private $object;
+
+    protected function setUp(): void
     {
-        $config = dirname(__DIR__) . "/data/options.ini";
+        parent::setUp();
+
+        $this->object = new Runner();
+
+    }
+
+    protected function forRunSetUp(): void
+    {
+     
+        // Initialize an in-memory SQLite database
+
+        $config = "./src/data/options.ini";
         $options = parse_ini_file($config, true);
+
         Registry::reset();
         $reg = Registry::instance();
-        $conf = new Conf($options[$type]);
+        $conf = new Conf($options['sqlite']);
         $reg->setConf($conf);
+        $reg = Registry::instance();
         $dsn = $reg->getDSN();
 
         if (is_null($dsn)) {
             throw new AppException("No DSN");
         }
-        
+
         if ($conf->get('driver') == 'mysql') {
             $username = $conf->get('username');
             $password = $conf->get('password');
         }
-        
-        
-        $pdo = new \PDO($dsn, $username ?? null, $password ?? null, [\PDO::ATTR_PERSISTENT => true]);
+
+
+        $pdo = new \PDO('sqlite::memory:');
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $autoincrement = "AUTOINCREMENT";
 
@@ -46,38 +67,19 @@ class SetupDb {
                 `rgt` int DEFAULT NULL,
                 `lvl` int DEFAULT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
-                 
         } else {
             $pdo->query("DROP TABLE IF EXISTS categories");
             $pdo->query("CREATE TABLE categories 
             ( id INTEGER PRIMARY KEY $autoincrement, name TEXT, parent_id INTEGER REFERENCES categories, left INTEGER, rgt INTEGER, lvl INTEGER)");
         }
-      
+    }
+
+
+
+    public function testRun()
+    {
         
-    }
-
-    public static function setSqlite()
-    {
-        $config = dirname(__DIR__) . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        Registry::reset();
-        $reg = Registry::instance();
-        $conf = new Conf($options['sqlite']);
-        $reg->setConf($conf);
-    }
-
-    protected static function setMysql()
-    {
-        $config = dirname(__DIR__) . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        $reg = Registry::instance();
-        $conf = new Conf($options['mysql']);
-        $reg->setConf($conf);
-         
-    }
-
-    public static function insertInitData()
-    {
+        SetupDb::setUp('mysql');
         $treeMapper = new TreeMapper();
 
         $tree = new Tree(-1, "Parent 1");
@@ -102,11 +104,30 @@ class SetupDb {
         //dump($tree);
         //ObjectWatcher::instance()->performOperations();
         $tree->save();
+
+        $treeMapper = new TreeMapper('categories', ['simpleArray' => true]);
+        $tree = $treeMapper->getTree(1);
+
+        $this->assertIsArray($tree);
+        
     }
 
 
+    public function testRun8() {
+
+        SetupDb::setUp('mysql');
+        SetupDb::insertInitData();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->findBy(['name' => 'Child 1 The Space']);
+
+        $this->assertIsObject($tree);
+    }
+
+    public function testrun6()
+    {
+        
+        $this->assertEquals('<ul><li>Child 1 The Space</li><ul><li>Child 3</li><ul><li>Child 4</li></ul><li>Child 5</li><li>Child 6</li></ul></ul>', $this->object::run6());
+        //$this->assertTrue(true);
+        //return 'second';
+    }
 }
-    ?>
-
-
-

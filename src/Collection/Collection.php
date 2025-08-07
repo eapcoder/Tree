@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tree;
+
+namespace Tree\Collection;
+
+use Tree\Exception\AppException;
+use Tree\DomainObject;
+use Tree\Mappers\Mapper;
 
 abstract class Collection implements \Iterator
 {

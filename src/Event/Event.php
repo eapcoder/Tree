@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tree;
 
+use Tree\Conf\Registry;
+
 class Event extends DomainObject
 {
 
@@ -47,7 +49,7 @@ class Event extends DomainObject
 
     public function setName(string $name): void
     {
-        $this->name = $name_s;
+        $this->name = $name;
         $this->markDirty();
     }
 

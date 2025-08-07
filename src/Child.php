@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Tree;
 
+use Tree\Collection\ChildCollection;
+use Tree\Collection\EventCollection;
+use Tree\Conf\Registry;
+use Tree\Mappers\ChildMapper;
+
 class Child extends DomainObject
 {
     private ?EventCollection $events = null;
