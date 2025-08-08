@@ -10,6 +10,7 @@ use Tree\ApplicationHelper;
 use Tree\Collection\ChildCollection;
 use Tree\Collection\EventCollection;
 use Tree\Collection\TreeCollection;
+use Tree\Exception\AppException;
 use Tree\Mappers\ChildMapper;
 use Tree\Mappers\TreeMapper;
 

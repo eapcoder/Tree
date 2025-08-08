@@ -96,14 +96,14 @@ class ObjectWatcher
            
             $obj->getFinder()->update($obj);
         }
-       
+      
         foreach ($this->new as $key => $obj) {
             dump($obj);
             if ($obj instanceof Tree) {
-                /* if($obj->getId() <= 0)  */
-               
+                if($obj->getId() <= 0)
                 $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
             } else {
+                if ($obj->getId() <= 0)
                 $this->performOperationsForChilds($obj, $lvl = 1, $obj->getParent());
                 /* if ($obj->hasChilds()) {
                     $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getParent());

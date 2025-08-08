@@ -2,15 +2,19 @@
 declare(strict_types=1);
 
 namespace Tree;
-
-use Tree\Conf\Conf;
-use Tree\Conf\Registry;
-use Tree\Exception\AppException;
 use Tree\Mappers\TreeMapper;
 use Tree\Setup\SetupDb;
 
+/**
+ * Class for test Tree function
+ */
+
 class Runner extends SetupDb
 {
+    /**
+     * Added tree with childs as initial data to sql
+     */
+
     public static function run()
     {
         self::setUp('mysql');
@@ -45,31 +49,42 @@ class Runner extends SetupDb
         return $tree;
     }
 
-    
+    /**
+     * Added sub tree with childs to child
+     */
     public static function run5()
     {
+        self::run();
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(1);
+        $tree = $treeMapper->find(4);
         dump($tree);
         dump($tree->getId());
         $new = new Child(-1, 'New Child', $tree->getId());
-        //$new->setName('New Child space');
+        
+        $subchild = new Child(-1, 'New Sub child', $tree->getId());
+        $new->addChild($subchild);
+        $new->setName('New Child space');
         $tree->addChild($new);
         $tree->save();
 
-       
-
     }
+
+    /**
+     * Output html tree
+     */
 
     public static function run6()
     {
-
         self::setMysql();
         $treeMapper = new TreeMapper('categories', ['html' => true]);
         $tree = $treeMapper->getTree(1);
         echo $tree;
     }
+
+    /**
+     * Find tree element by title
+     */
 
     public static function run8()
     {
@@ -81,6 +96,9 @@ class Runner extends SetupDb
         
     }
 
+    /**
+     * Find tree element by title and parent with some id
+     */
 
     public static function run7()
     {
@@ -93,8 +111,9 @@ class Runner extends SetupDb
         }
     }
 
-  
-  
+    /**
+     * Tree from Sqlite
+     */
     public static function run2()
     {
         self::setSqlite();
@@ -109,6 +128,9 @@ class Runner extends SetupDb
 
     }
 
+    /**
+     * Output tree in html format from Sqlite
+     */
     public static function run3()
     {
         self::setSqlite();
@@ -116,17 +138,13 @@ class Runner extends SetupDb
         echo $treeMapper->getTree(1);
     }
 
+    /**
+     * Find element in tree and update it
+     */
     public static function run4()
     {
-        $config = __DIR__ . "/data/options.ini";
-        $options = parse_ini_file($config, true);
-        Registry::reset();
-        $reg = Registry::instance();
-        $conf = new Conf($options['mysql']);
-        $reg->setConf($conf);
-        $reg = Registry::instance();
-        $treeMapper = new TreeMapper();
-
+        self::setMysql();
+        $treeMapper = new TreeMapper('categories', ['html' => true]);
         $tree = $treeMapper->find(1);
         dump($tree->getName());
         $tree->setName("Parent 1 Beer Likey Lounge");

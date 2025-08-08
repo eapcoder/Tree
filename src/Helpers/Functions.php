@@ -1,6 +1,6 @@
 <?php
 
-function stack_trace()
+function trace()
 {
     $e = new \Exception;
     if(function_exists('dump')) {

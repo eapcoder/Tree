@@ -121,12 +121,17 @@ class ChildMapper extends Mapper
         return $this->selectByStmt;
     }
 
-    public function findByTree($vid): Child
+    public function findByTree($vid): Child | bool
     {
         $this->findByTreeStmt->execute([$vid]);
         $item = $this->findByTreeStmt->fetch();
-        $obj = $this->doCreateObject($item);
-        return $obj;
+        if($item) {
+            $obj = $this->doCreateObject($item);
+            return $obj;
+        } else {
+            return false;
+        }
+        
         
         //return new ChildCollection([$obj], $this);
     }

@@ -56,7 +56,7 @@ class Child extends DomainObject
     public function setTree(Tree $tree): void
     {
 
-        stack_trace();
+        trace();
         $this->tree = $tree;
         $this->markDirty();
     }

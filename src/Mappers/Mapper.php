@@ -7,6 +7,7 @@ namespace Tree\Mappers;
 use Tree\Collection\Collection;
 use Tree\Conf\Registry;
 use Tree\DomainObject;
+use Tree\Exception\AppException;
 use Tree\ObjectWatcher;
 
 
@@ -33,13 +34,11 @@ abstract class Mapper
         $raw = $this->selectstmt()->fetch();
         $this->selectstmt()->closeCursor();
 
-        if (! is_array($raw)) {
-            return null;
+        if (! is_array($raw) || ! isset($raw['id'])) {
+           throw new AppException('Sql record not fonud');
         }
 
-        if (! isset($raw['id'])) {
-            return null;
-        }
+        
      
         $object = $this->createObject($raw);
 
@@ -112,7 +111,8 @@ abstract class Mapper
         if (! is_null($old)) {
             return $old;
         }
-       
+        
+      
         $obj = $this->doCreateObject($raw);
         $this->addToMap($obj);
 
