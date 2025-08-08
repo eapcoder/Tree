@@ -13,10 +13,12 @@ use Tree\Tree;
 class TreeMapper extends Mapper
 {
     private \PDOStatement $selectStmt;
+    private \PDOStatement $selectNullStmt;
     private \PDOStatement $selectByStmt;
     private \PDOStatement $selectTreeStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
+    private \PDOStatement $updateParentStmt;
     private \PDOStatement $insertStmt;
     private $parentId;
     public function __construct(private $table = 'categories', private $options = array())
@@ -27,6 +29,10 @@ class TreeMapper extends Mapper
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE id=?"
         );
+        
+        $this->selectNullStmt = $this->pdo->prepare(
+            "SELECT * FROM $table WHERE parent_id IS ?"
+        );
 
         $this->selectAllStmt = $this->pdo->prepare(
             "SELECT * FROM $table"
@@ -35,6 +41,11 @@ class TreeMapper extends Mapper
         $this->updateStmt = $this->pdo->prepare(
             "UPDATE $table SET name=?, id=? WHERE id=?"
         );
+
+        $this->updateParentStmt = $this->pdo->prepare(
+            "UPDATE $table SET parent_id=? WHERE id=?"
+        );
+
         $this->insertStmt = $this->pdo->prepare(
             "INSERT INTO $table ( name ) VALUES( ? )"
         );
@@ -70,9 +81,9 @@ class TreeMapper extends Mapper
 
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
-        
-        $obj = new Tree((int)$array['id'], $array['name']);
        
+        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id']);
+        dump($obj->getParent());
         if($withChild) {
             $childMapper = new ChildMapper();
             $child = $childMapper->findByTree($array['id']);
@@ -105,11 +116,25 @@ class TreeMapper extends Mapper
         $this->updateStmt->execute($values);
     }
 
+    public function updateParent(DomainObject $object, $current): void
+    {
+
+        $values = [$object->getParent(), $current->getId()];
+        dump($values);
+        $this->updateParentStmt->execute($values);
+    }
+
     public function selectStmt(): \PDOStatement
     {
         return $this->selectStmt;
         
     }
+
+    public function selectNullStmt(): \PDOStatement
+    {
+        return $this->selectNullStmt;
+    }
+
 
     public function selectByStmt($criteria): \PDOStatement
     {
@@ -192,23 +217,48 @@ class TreeMapper extends Mapper
     }
 
     
-    public function getTree($id)
+    public function getTree($id = null)
     {
-        $this->parentId = $id;
-        $this->selectTreeStmt->execute([$id]);
-        $raws =  $this->selectTreeStmt->fetchAll();
-        $childMapper = new ChildMapper();
-
-        foreach($raws as $key => $raw) {
-            $raws[$key] = array_filter($raw, function ($key) {
-               
-                return $key != '0' && $key != '1' && $key != '2';
-            }, ARRAY_FILTER_USE_KEY);
-        }
+        if(empty($id)) {
+            $raws = [];
+            //$raws[] = ['parent_id' => null];
+            $this->selectNullStmt->execute([null]);
+            $parentRaws =  $this->selectNullStmt->fetchAll();
+            
+            foreach($parentRaws as $elem) {
+                
+                $this->selectTreeStmt->execute([$elem['id']]);
+                $raws[] = $this->selectTreeStmt->fetchAll();
+                
+                
+                   
+            }
+           // dump($raws[0]);
+            // dump($raws[1]);
+            array_unshift($raws[1], $raws[0][0]);
+            $raws = $raws[1];
            
+        } else {
+            $this->parentId = $id;
+            $this->selectTreeStmt->execute([$id]);
+            $raws =  $this->selectTreeStmt->fetchAll();
+
+            foreach ($raws as $key => $raw) {
+                $raws[$key] = array_filter($raw, function ($key) {
+                    return $key != '0' && $key != '1' && $key != '2';
+                }, ARRAY_FILTER_USE_KEY);
+            }
+        }
+
+
+
+        
         $parentChild = array();
         $raws[0]['parent_id'] = null;
-   
+        //ksort($raws);
+       
+        
+      
         $this->makeParentChildRelations($raws, $parentChild);
        
         

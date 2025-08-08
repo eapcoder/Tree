@@ -49,67 +49,6 @@ class Runner extends SetupDb
         return $tree;
     }
 
-    /**
-     * Added sub tree with childs to child
-     */
-    public static function run5()
-    {
-        self::run();
-        self::setMysql();
-        $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(4);
-        dump($tree);
-        dump($tree->getId());
-        $new = new Child(-1, 'New Child', $tree->getId());
-        
-        $subchild = new Child(-1, 'New Sub child', $tree->getId());
-        $new->addChild($subchild);
-        $new->setName('New Child space');
-        $tree->addChild($new);
-        $tree->save();
-
-    }
-
-    /**
-     * Output html tree
-     */
-
-    public static function run6()
-    {
-        self::setMysql();
-        $treeMapper = new TreeMapper('categories', ['html' => true]);
-        $tree = $treeMapper->getTree(1);
-        echo $tree;
-    }
-
-    /**
-     * Find tree element by title
-     */
-
-    public static function run8()
-    {
-        self::setMysql();
-        $treeMapper = new TreeMapper();
-        $tree = $treeMapper->findBy(['name'=> 'Child 1 The Space']);
-        dump($tree);
-        return $tree;
-        
-    }
-
-    /**
-     * Find tree element by title and parent with some id
-     */
-
-    public static function run7()
-    {
-        self::setMysql();
-        $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(2);
-        //dump($tree->getChilds());
-        foreach ($tree->getChilds() as $item) {
-            dump($item->getTree());
-        }
-    }
 
     /**
      * Tree from Sqlite
@@ -151,5 +90,66 @@ class Runner extends SetupDb
         $treeMapper->update($tree);
         dump($tree);
     }
+
+
+    /**
+     * Added sub tree with childs to child
+     */
+    public static function run5()
+    {
+        self::run();
+        self::setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(4);
+        dump($tree);
+        dump($tree->getId());
+        $new = new Child(-1, 'New Child', $tree->getId());
+
+        $subchild = new Child(-1, 'New Sub child', $tree->getId());
+        $new->addChild($subchild);
+        $new->setName('New Child space');
+        $tree->addChild($new);
+        $tree->save();
+    }
+
+    /**
+     * Output html tree
+     */
+
+    public static function run6()
+    {
+        self::setMysql();
+        $treeMapper = new TreeMapper('categories', ['html' => true]);
+        $tree = $treeMapper->getTree();
+        echo $tree;
+    }
+
+    /**
+     * Find tree element by title and parent with some id
+     */
+
+    public static function run7()
+    {
+        self::setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(2);
+        $tree->up();
+        dump($tree);
+        
+    }
+
+    /**
+     * Find tree element by title
+     */
+
+    public static function run8()
+    {
+        self::setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->findBy(['name' => 'Child 1 The Space']);
+        dump($tree);
+        return $tree;
+    }
+
 
 }

@@ -13,7 +13,7 @@ class Tree extends DomainObject
     private ?ChildCollection $childs = null;
     private ?bool $hasChild = false;
 
-    public function __construct(int $id, private string $name)
+    public function __construct(int $id, private string $name, private int|null $parent_id)
     {
         parent::__construct($id);
     }
@@ -82,6 +82,38 @@ class Tree extends DomainObject
     public function save()
     {
         ObjectWatcher::instance()->performOperations();
+        
+    }
+
+    public function getParent(): int|null
+    {
+        return $this->parent_id;
+    }
+
+    public function setParent($parent)
+    {
+        $treeMapper = $this->getFinder();
+        $treeMapper->updateParent($parent, $this);
+        
+        
+    }
+
+
+    public function up(): void
+    {
+        dump($this->getParent());
+        $treeMapper = $this->getFinder();
+        /* $treeMapper->selectStmt()->execute([$this->getParent()]);
+        $parent = $treeMapper->selectstmt()->fetch();
+        $treeMapper->selectstmt()->closeCursor(); */
+        $parent = $treeMapper->find($this->getParent());
+        dump($parent->getParent());
+        $this->setParent($parent);
+
+    }
+
+    public function down(): void
+    {
         
     }
 

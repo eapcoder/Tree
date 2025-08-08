@@ -5,6 +5,6 @@ require_once(__DIR__ . "/src/Helpers/Functions.php");
 use Tree\Runner;
 
 
-$result = Runner::run4();
+$result = Runner::run7();
 
 ?>

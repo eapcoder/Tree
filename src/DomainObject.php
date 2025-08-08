@@ -27,6 +27,7 @@ abstract class DomainObject
         $this->id = $id;
     }
 
+
     public function markNew(): void
     {
         ObjectWatcher::addNew($this);
@@ -45,5 +46,15 @@ abstract class DomainObject
     public function markClean(): void
     {
         ObjectWatcher::addClean($this);
+    }
+
+    public function up(): void
+    {
+        
+    }
+
+    public function down(): void
+    {
+        
     }
 }
