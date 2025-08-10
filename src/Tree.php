@@ -12,8 +12,10 @@ class Tree extends DomainObject
 {
     private ?ChildCollection $childs = null;
     private ?bool $hasChild = false;
-
-    public function __construct(int $id, private string $name, private int|null $parent_id)
+    protected ?int $lft = 0;
+    protected ?int $rgt = 0;
+    protected ?int $lvl = null;
+    public function __construct(int $id, private string $name, private int|null $parent_id = null)
     {
         parent::__construct($id);
     }
@@ -37,6 +39,7 @@ class Tree extends DomainObject
 
     public function addChild(Child $child): void
     {
+        
         $this->getChilds()->add($child);
         $child->setTree($this);
         $this->hasChild = true;
@@ -115,6 +118,40 @@ class Tree extends DomainObject
     public function down(): void
     {
         
+    }
+
+
+    public function getLeft(): int
+    {
+        return $this->lft;
+    }
+
+    public function setLeft($lft)
+    {
+        $this->lft = $lft;
+        return $this;
+    }
+
+    public function getRight(): int
+    {
+        return $this->rgt;
+    }
+
+    public function setRight($rgt)
+    {
+        $this->rgt = $rgt;
+        return $this;
+    }
+
+    public function getLvl(): int
+    {
+        return $this->lvl;
+    }
+
+    public function setLvl($lvl)
+    {
+        $this->lvl = $lvl;
+        return $this;
     }
 
 }

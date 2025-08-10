@@ -15,6 +15,8 @@ class Child extends DomainObject
     private ?ChildCollection $childs = null;
     private ?bool $hasChild = false;
     public ?bool $hasParent = false;
+    protected ?int $lft = 0;
+    protected ?int $rgt = 0;
 
     public function __construct(int $id, private string $name, private int $parent_id, private ?int $lvl = null, private ?Tree $tree = null)
     {
@@ -55,8 +57,6 @@ class Child extends DomainObject
 
     public function setTree(Tree $tree): void
     {
-
-        trace();
         $this->tree = $tree;
         $this->markDirty();
     }
@@ -66,7 +66,7 @@ class Child extends DomainObject
         $this->name = $name;
         $this->markDirty();
     }
-    /* /listing 13.27 */
+
 
     public function setEvents(EventCollection $collection): void
     {
@@ -79,9 +79,6 @@ class Child extends DomainObject
         return $this->events;
     }
 
-    /* listing 13.30 */
-
-    // Space
 
     public function getEvents2(): EventCollection
     {
@@ -94,7 +91,7 @@ class Child extends DomainObject
 
         return $this->events;
     }
-/* /listing 13.30 */
+
 
     public function forgetEvents(): void
     {
@@ -145,4 +142,28 @@ class Child extends DomainObject
     {
         return $this->hasChild;
     }
+
+    public function getLeft(): int
+    {
+        return $this->lft;
+    }
+
+    public function setLeft($lft)
+    {
+        $this->lft = $lft;
+        return $this;
+    }
+
+    public function getRight(): int
+    {
+        return $this->rgt;
+    }
+
+    public function setRight($rgt)
+    {
+        $this->rgt = $rgt;
+        return $this;
+    }
+
+
 }

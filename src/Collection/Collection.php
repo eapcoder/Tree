@@ -9,7 +9,7 @@ use Tree\Exception\AppException;
 use Tree\DomainObject;
 use Tree\Mappers\Mapper;
 
-abstract class Collection implements \Iterator
+abstract class Collection implements \Iterator, \Countable
 {
     protected int $total = 0;
     private int $pointer = 0;
@@ -89,5 +89,10 @@ abstract class Collection implements \Iterator
     public function valid(): bool
     {
         return (! is_null($this->current()));
+    }
+
+    public function count(): int
+    {
+        return $this->total;
     }
 }

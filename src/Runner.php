@@ -30,6 +30,8 @@ class Runner extends SetupDb
         $ch2 = new Child(-1, 'Child 3', $tree->getId());
         $ch3 = new Child(-1, 'Child 4', $tree->getId());
         $ch2->addChild($ch3);
+        $ch41 = new Child(-1, 'Child 4.1', $tree->getId());
+        $ch2->addChild($ch41);
         $ch1->addChild($ch2);
 
         $ch4 = new Child(-1, 'Child 5', $tree->getId());
@@ -132,7 +134,7 @@ class Runner extends SetupDb
     {
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(2);
+        $tree = $treeMapper->find(4);
         $tree->up();
         dump($tree);
         

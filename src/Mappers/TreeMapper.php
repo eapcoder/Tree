@@ -51,9 +51,9 @@ class TreeMapper extends Mapper
         );
  
         $this->selectTreeStmt = $this->pdo->prepare(
-            "WITH RECURSIVE r (id, parent_id, name)
+            "WITH RECURSIVE r (id, parent_id, name, lvl)
             AS (
-                SELECT id, parent_id, name
+                SELECT id, parent_id, name, lvl
                 FROM $table 
                 WHERE id = ?
 
@@ -61,7 +61,8 @@ class TreeMapper extends Mapper
 
                 SELECT $table.id,
                        $table.parent_id,
-                       $table.name
+                       $table.name,
+                       $table.lvl
                 FROM   $table, r
                 WHERE (r.id = $table.parent_id)
             )
@@ -81,13 +82,15 @@ class TreeMapper extends Mapper
 
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
-       
+     
         $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id']);
-        dump($obj->getParent());
+       
         if($withChild) {
-            $childMapper = new ChildMapper();
+            $childMapper = new ChildMapper();   
             $child = $childMapper->findByTree($array['id']);
+            
             if($child) {
+              
                 $obj->addChild($child);
             }
             
@@ -233,16 +236,30 @@ class TreeMapper extends Mapper
                 
                    
             }
-           // dump($raws[0]);
-            // dump($raws[1]);
-            array_unshift($raws[1], $raws[0][0]);
-            $raws = $raws[1];
+            $newArr = [];
+            foreach($raws as $key => $raw) {
+                if(is_array($raw)) {
+                    foreach ($raw as $k => $v) {
+                        
+                        array_push($newArr, $v);
+                    }
+                }
+               
+                
+            }
            
+
+               //dump($newArr);
+               //array_unshift($raws[1], $raws[0][0]);
+               $raws = $newArr;
+              // dump($raws); 
+               
+
         } else {
             $this->parentId = $id;
             $this->selectTreeStmt->execute([$id]);
             $raws =  $this->selectTreeStmt->fetchAll();
-
+           
             foreach ($raws as $key => $raw) {
                 $raws[$key] = array_filter($raw, function ($key) {
                     return $key != '0' && $key != '1' && $key != '2';
@@ -260,7 +277,7 @@ class TreeMapper extends Mapper
         
       
         $this->makeParentChildRelations($raws, $parentChild);
-       
+        
         
         if(isset($this->options['html']) && $this->options['html'] === true) {
          
@@ -269,7 +286,7 @@ class TreeMapper extends Mapper
             return $parentChild;
         } else {
             foreach($parentChild as $raw) {
-               
+             
                 if($raw['parent_id'] == NULL || $raw['parent_id'] == $raws[0]['id']) {
                    //print 'parent_id++++' . PHP_EOL;
                     
@@ -305,10 +322,10 @@ class TreeMapper extends Mapper
         foreach ($raw['children'] as $rawchild) {
 
              if (!$parentChild && $id == $this->parentId) {
-                $parentChild = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id']);
+                $parentChild = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
                 $parentChild->hasParent = true;
             } else {
-                $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id']);
+                $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
                 $child->hasParent = true;
                 $parentChild->addChild($child);
             } 

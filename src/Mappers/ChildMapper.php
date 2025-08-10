@@ -63,8 +63,8 @@ class ChildMapper extends Mapper
 
     protected function doCreateObject(array $raw): Child
     {
-
-        $obj = new Child((int)$raw['id'], $raw['name'], $raw['parent_id']);
+        
+        $obj = new Child((int)$raw['id'], $raw['name'], $raw['parent_id'],  $raw['lvl']);
        
         $treeMapper = new TreeMapper();
         //$tree = $treeMapper->find((int)$raw['parent_id']);

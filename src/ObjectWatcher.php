@@ -2,10 +2,12 @@
 declare(strict_types=1);
 
 namespace Tree;
+use Tree\Helpers\TreeRebuilder;
 
 class ObjectWatcher
 {
-  
+    use TreeRebuilder;
+    
     private array $all = [];
     private array $dirty = [];
     private array $new = [];
@@ -96,9 +98,12 @@ class ObjectWatcher
            
             $obj->getFinder()->update($obj);
         }
-      
+        
+        $fitstId = $this->new[0]->getId() ?? null;
+
+        dump($this->new[0]->getId());
         foreach ($this->new as $key => $obj) {
-            dump($obj);
+            
             if ($obj instanceof Tree) {
                 if($obj->getId() <= 0)
                 $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
@@ -118,9 +123,22 @@ class ObjectWatcher
 
             print "inserting " . $obj->getName() . "\n";
         }
-
+        
+        $this->rebuild($fitstId);
         $this->dirty = [];
         $this->new = [];
+    }
+    
+    protected function rebuild($fitstId): void
+    {
+        $tree = $this->new[0]->getFinder()->getTree($fitstId);
+      
+        if($tree->hasChilds()) {
+            $this->generate($tree);
+        }
+           
+       
+        
     }
 
     public function performOperationsForChilds($childs, $lvl, $parent_id): void
