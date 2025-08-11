@@ -44,60 +44,64 @@ trait TreeRebuilder
     }
 
 
-    public function generate($tree = null, &$left = 0, &$right = 0, &$t = null, &$k = null)
+    public function generate($tree = null, &$left = 0, &$right = 0, &$t = null, &$rightParent = null, &$lastlvl = null, $UpLevel = null)
     {
         //trace();
         $level = $level ?? 0;
-        $k = $k ?? 0;
+
         $common = $common ?? [];
         if($tree instanceof Tree){
-            $t = $this->getTotal($tree->getId());
-            $left = 1;
-            $right = $t * 2;
+            
+            $left = $right = 1;
             $tree->setLeft($left);
-            $tree->setRight($right);
+            $tree->setRight($this->getTotal($tree->getId()) * 2);
             ++$level;
-            //dump('$level = ' . $level);
             dump($tree);
+            dump($this->getTotal($tree->getId()));
         }
 
-        $k = 0;
+
         foreach($tree->getChilds() as $key => $childs) {
-            ++$k;
-           
-            if ($childs->hasChilds()) {
-                $left = $left + 1;
-                $t = $this->getTotal($childs->getId());
-               
-                    $right = $t * 2 + $childs->getLvl() - 1;
-              
+            if(!$UpLevel) {
+                $left = $right = $right + 1;
                 
-              
-               
-              
-              
             } else {
-                if($k == 1) {
-                    $left  = $childs->getLvl()  * $k;
-                    $right = $childs->getLvl()  * $k + 1;
-                } else {
-                    //$left = (int) ceil($right / 2) + $k + 1;
-                    //$right = $childs->getLvl()  * $k;
-                    $left  = $childs->getLvl()  * $k;
-                    $right = $childs->getLvl()  * $k + 1;
-                }
-                
-                dump($k);
+                $left = $left + 1;
+                $UpLevel = false;
             }
-           
+            $up = (($lastlvl <=> $childs->getLvl()) == 1);
+            dump($up);
+            if ($childs->hasChilds()) {
+             
+              
+              
+                $rightParent = $this->getTotal($childs->getId()) * 2 + $left - (($up) ? 0 : 1);
+                $childs->setRight($rightParent);
+              
+                if ($up) { // 1
+                    $left  = $left + 1;
+                    $right = $rightParent;
+                    $UpLevel = true;
+                }
+              
+               
+            } else {
+                if ($up) { // 1
+                    $left  = $rightParent + 1;
+                   
+                }
+                $right = $left + 1;
+                $childs->setRight($right);
+            }
+
+            $lastlvl = $childs->getLvl();
             $childs->setLeft($left);
-            $childs->setRight($right);
+
+            dump('$left = ' . $left . ' $right = ' . $right);
             dump($childs);
-            
            
             if($childs->hasChilds()) {
-                $k = 0;
-                $this->generate($childs, $left, $right, $t, $k);
+                   $this->generate($childs, $left, $right, $t, $rightParent, $lastlvl, $UpLevel);
             }
 
            

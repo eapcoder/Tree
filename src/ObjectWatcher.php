@@ -101,7 +101,7 @@ class ObjectWatcher
         
         $fitstId = $this->new[0]->getId() ?? null;
 
-        dump($this->new[0]->getId());
+       
         foreach ($this->new as $key => $obj) {
             
             if ($obj instanceof Tree) {

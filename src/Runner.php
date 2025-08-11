@@ -32,9 +32,15 @@ class Runner extends SetupDb
         $ch2->addChild($ch3);
         $ch41 = new Child(-1, 'Child 4.1', $tree->getId());
         $ch2->addChild($ch41);
+        $ch42 = new Child(-1, 'Child 4.2', $tree->getId());
+        $ch2->addChild($ch42);
         $ch1->addChild($ch2);
 
         $ch4 = new Child(-1, 'Child 5', $tree->getId());
+        $ch51 = new Child(-1, 'Child 5.1', $tree->getId());
+        $ch4->addChild($ch51);
+        $ch52 = new Child(-1, 'Child 5.2', $tree->getId());
+        $ch4->addChild($ch52);
         $ch1->addChild($ch4);
 
         $ch5 = new Child(-1, 'Child 6', $tree->getId());
