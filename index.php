@@ -8,6 +8,6 @@ addHtml();
 
 $result = Runner::run11();
 
-//$result = Runner::run6();
+$result = Runner::run6();
 
 ?>

@@ -122,11 +122,41 @@ trait TreeRebuilder
      * //TODO
      */
     public function moveUpInOneLevel($object) {
-        dump($object);
-        dump($this->getTotal($object->getParent(), $object->getLvl()));
-        $parent = $object;
-        dump($this->getTree($object->getParent()));
-      
+        $id = $object->getId();
+       /*  dump($object);
+        dump($this->getTotal($object->getParent(), $object->getLvl())); */
+        $parent = $this->getTree($object->getParent());
+        
+        
+        $items = [];
+        $i = 0;
+        foreach($parent->getChilds() as $child) {
+            ++$i;
+            $items[$i] = $child;
+            if ($id ==  $child->getId()) {
+                
+                if ($i > 1) {
+                    dump($i);
+                    dump($items[$i-1]);
+                    $items = array_reverse($items);
+                }
+            } else {
+                $items[$i] = $child;
+                
+            }
+           
+          
+        }
+        $parent = $this->find($object->getParent());
+        foreach($items as $item) {
+            $item->setId(-1);
+            $parent->addChild($item);
+        }
+        $parent->save();
+         
+        
+        
+        
     }
 
     /**

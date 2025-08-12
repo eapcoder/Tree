@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tree\Mappers;
@@ -28,12 +29,12 @@ class TreeMapper extends Mapper
     public function __construct(private $table = 'categories', private $options = array())
     {
         parent::__construct();
-        
+
 
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE id=?"
         );
-        
+
         $this->selectNullStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE parent_id IS ?"
         );
@@ -57,7 +58,7 @@ class TreeMapper extends Mapper
         $this->insertStmt = $this->pdo->prepare(
             "INSERT INTO $table ( name, lft, rgt ) VALUES( ?, ?, ? )"
         );
- 
+
         $this->selectTreeStmt = $this->pdo->prepare(
             "WITH RECURSIVE r (id, parent_id, name, lvl, lft, rgt)
             AS (
@@ -92,18 +93,17 @@ class TreeMapper extends Mapper
 
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
-       
+
         $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
-        
-        if($withChild) {
-            $childMapper = new ChildMapper();   
+
+        if ($withChild) {
+            $childMapper = new ChildMapper();
             $child = $childMapper->findByTree($array['id']);
-            
-            if($child) {
-              
+
+            if ($child) {
+
                 $obj->addChild($child);
             }
-            
         }
 
         return $obj;
@@ -116,11 +116,10 @@ class TreeMapper extends Mapper
             $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
             $stmt->execute([':parent_id' => $object->getParent()]);
             $parent_rgt = $stmt->fetchColumn();
-           
+
 
             $this->insertStmt->execute($values);
             $id = $this->pdo->lastInsertId();
-
         } catch (AppException $e) {
             print $e->getMessage();
         }
@@ -139,18 +138,16 @@ class TreeMapper extends Mapper
     {
         $values = [$object->getId()];
         $this->removeStmt->execute($values);
-        
-        if($this->removeStmt->execute($values)) {
+
+        if ($this->removeStmt->execute($values)) {
             $this->rebuild($object);
         }
-
     }
 
     public function moveLevelUp(DomainObject $object): void
     {
-        
-        $this->moveUpandRebuid($object);
 
+        $this->moveUpandRebuid($object);
     }
 
     public function moveUp(DomainObject $object): void
@@ -175,7 +172,6 @@ class TreeMapper extends Mapper
     public function selectStmt(): \PDOStatement
     {
         return $this->selectStmt;
-        
     }
 
     public function selectNullStmt(): \PDOStatement
@@ -187,15 +183,15 @@ class TreeMapper extends Mapper
     public function selectByStmt($criteria): \PDOStatement
     {
         $sel = '';
-        foreach($criteria as $key => $item) {
-            $sel .= $key .'=:'. $key.','; 
+        foreach ($criteria as $key => $item) {
+            $sel .= $key . '=:' . $key . ',';
         }
         $sel = !empty($sel) ? substr($sel, 0, -1) : '';
-      
+
         $this->selectByStmt = $this->pdo->prepare(
             "SELECT * FROM $this->table WHERE $sel"
         );
-       // dump($this->selectByStmt);
+        // dump($this->selectByStmt);
         return $this->selectByStmt;
     }
 
@@ -252,9 +248,9 @@ class TreeMapper extends Mapper
             return;
         }
 
-           
+
         foreach ($inArray as $tuple) {
-           
+
             if ($tuple['parent_id'] == $currentParentId) {
 
                 $tuple['children'] = array();
@@ -264,47 +260,42 @@ class TreeMapper extends Mapper
         }
     }
 
-    
+
     public function getTree($id = null)
     {
-        if(empty($id)) {
+        if (empty($id)) {
             $raws = [];
             //$raws[] = ['parent_id' => null];
             $this->selectNullStmt->execute([null]);
             $parentRaws =  $this->selectNullStmt->fetchAll();
-            
-            foreach($parentRaws as $elem) {
-                
+
+            foreach ($parentRaws as $elem) {
+
                 $this->selectTreeStmt->execute([$elem['id']]);
                 $raws[] = $this->selectTreeStmt->fetchAll();
-                
-                
-                   
             }
             $newArr = [];
-            foreach($raws as $key => $raw) {
-                if(is_array($raw)) {
+            foreach ($raws as $key => $raw) {
+                if (is_array($raw)) {
                     foreach ($raw as $k => $v) {
-                        
+
                         array_push($newArr, $v);
                     }
                 }
-               
-                
             }
-           
 
-               //dump($newArr);
-               //array_unshift($raws[1], $raws[0][0]);
-               $raws = $newArr;
-              // dump($raws); 
-               
+
+            //dump($newArr);
+            //array_unshift($raws[1], $raws[0][0]);
+            $raws = $newArr;
+            // dump($raws); 
+
 
         } else {
             $this->parentId = $id;
             $this->selectTreeStmt->execute([$id]);
             $raws =  $this->selectTreeStmt->fetchAll();
-           
+
             foreach ($raws as $key => $raw) {
                 $raws[$key] = array_filter($raw, function ($key) {
                     return $key != '0' && $key != '1' && $key != '2';
@@ -312,78 +303,87 @@ class TreeMapper extends Mapper
             }
         }
 
-
-
-        
         $parentChild = array();
         $raws[0]['parent_id'] = null;
         //ksort($raws);
 
 
-      
+       
         $this->makeParentChildRelations($raws, $parentChild);
         dump($parentChild);
-        
-        if(isset($this->options['html']) && $this->options['html'] === true) {
-         
+
+        if (isset($this->options['html']) && $this->options['html'] === true) {
+
             return Html::generate($parentChild, true);
-        } else if(in_array('simpleArray', $this->options) && $this->options['simpleArray'] === true) {
+        } else if (in_array('simpleArray', $this->options) && $this->options['simpleArray'] === true) {
             return $parentChild;
         } else {
-            foreach($parentChild as $raw) {
-             
-                if($raw['parent_id'] == NULL || $raw['parent_id'] == $raws[0]['id']) {
-                   //print 'parent_id++++' . PHP_EOL;
-                    
-                   $obj = $this->doCreateObject($raw, false);
-                   //print '<br>++++' . PHP_EOL;
+            foreach ($parentChild as $raw) {
+
+                if ($raw['parent_id'] == NULL || $raw['parent_id'] == $raws[0]['id']) {
+                    //print 'parent_id++++' . PHP_EOL;
+
+                    $obj = $this->doCreateObject($raw, false);
+                    //print '<br>++++' . PHP_EOL;
                 }
-               
-                if(count($raw['children']) > 0) {
-                   // print 'count($raw->children)' . PHP_EOL;
+
+                if (count($raw['children']) > 0) {
+                    // print 'count($raw->children)' . PHP_EOL;
                     //dump($obj);
                     //dump($raw);
                     //if(!empty($raw->children)) {
-                      
-                        //echo '<br>hasChilds'  . PHP_EOL;
-                        $childs = null;
-                        $childs = $this->generateChilds($raw, $obj, $raw['id']);
-                        //print 'childs' . PHP_EOL;
-                        //dump($childs);
-                        $obj->addChild($childs);
-                    //}
+
+                    //echo '<br>hasChilds'  . PHP_EOL;
+                    $childs = null;
+                    $childs = $this->generateChilds($raw, $obj, $raw['id']);
+                    //print 'childs' . PHP_EOL;
+                    //dump($childs);
                     
+                    //}
+
                 }
-                
             }
             return $obj;
         }
     }
-    
-    public function generateChilds($raw, $obj, $id, $parentChild = null) {
+
+    public function generateChilds($raw, $obj, $id, &$parentChild = null)
+    {
+       
         //$getchild->add($child);
         //print '<br>dump($obj) <<<<' . PHP_EOL;
         //dump($this->parentId);
+        $child = [];
         foreach ($raw['children'] as $rawchild) {
 
-             if (!$parentChild && $id == $this->parentId) {
+            /*   if (!$parentChild && $id == $this->parentId) {
+                dump($rawchild['name']);
                 $parentChild = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
                 $parentChild->hasParent = true;
-            } else {
-                $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
-                $child->hasParent = true;
-                $parentChild->addChild($child);
-            } 
-                   
-            if (count($rawchild['children'])) {
-                $this->generateChilds($rawchild, $obj, $rawchild['id'], $id == $this->parentId ? $parentChild : $child);
-            }
+                dump($parentChild);
+            }  */
 
+        
+            $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
+           
+            
+                if($parentChild) {
+                    $parentChild->addChild($child);
+                    $parentChild->hasParent = true;
+                } else {
+                    $obj->addChild($child);
+                }
+
+                if (count($rawchild['children'])) {
+                   
+                    $this->generateChilds($rawchild, $obj, $rawchild['id'], $child);
+                }
+            
         }
 
-        return $parentChild;
+        return $obj;
 
-       
+
         /* 
         print '<br>$generateChilds >>>>' . PHP_EOL;
         dump($obj);
