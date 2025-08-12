@@ -47,13 +47,13 @@ class TreeMapper extends Mapper
         );
 
         $this->insertStmt = $this->pdo->prepare(
-            "INSERT INTO $table ( name ) VALUES( ? )"
+            "INSERT INTO $table ( name, lft, rgt ) VALUES( ?, ?, ? )"
         );
  
         $this->selectTreeStmt = $this->pdo->prepare(
-            "WITH RECURSIVE r (id, parent_id, name, lvl)
+            "WITH RECURSIVE r (id, parent_id, name, lvl, lft, rgt)
             AS (
-                SELECT id, parent_id, name, lvl
+                SELECT id, parent_id, name, lvl, lft, rgt
                 FROM $table 
                 WHERE id = ?
 
@@ -62,7 +62,9 @@ class TreeMapper extends Mapper
                 SELECT $table.id,
                        $table.parent_id,
                        $table.name,
-                       $table.lvl
+                       $table.lvl,
+                       $table.lft,
+                       $table.rgt
                 FROM   $table, r
                 WHERE (r.id = $table.parent_id)
             )
@@ -101,10 +103,16 @@ class TreeMapper extends Mapper
 
     protected function doInsert(DomainObject $object): void
     {
-        $values = [$object->getName()];
+        $values = [$object->getName(), 1, 2];
         try {
+            $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
+            $stmt->execute([':parent_id' => $object->getParent()]);
+            $parent_rgt = $stmt->fetchColumn();
+           
+
             $this->insertStmt->execute($values);
             $id = $this->pdo->lastInsertId();
+
         } catch (AppException $e) {
             print $e->getMessage();
         }
@@ -281,7 +289,7 @@ class TreeMapper extends Mapper
         
         if(isset($this->options['html']) && $this->options['html'] === true) {
          
-            return Html::generate($parentChild);
+            return Html::generate($parentChild, true);
         } else if(in_array('simpleArray', $this->options) && $this->options['simpleArray'] === true) {
             return $parentChild;
         } else {

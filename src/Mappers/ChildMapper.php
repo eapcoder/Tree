@@ -34,7 +34,7 @@ class ChildMapper extends Mapper
             "UPDATE categories SET name=?, id=? WHERE id=?"
         );
         $this->insertStmt = $this->pdo->prepare(
-            "INSERT into categories ( name, parent_id, lvl ) VALUES( ?, ?, ?)"
+            "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
         );
 
         $this->selectAllStmt = $this->pdo->prepare(
@@ -93,8 +93,21 @@ class ChildMapper extends Mapper
         if (! $tree && !$object->hasParent) {
             throw new AppException("cannot save without prent tree");
         }
-      
-        $values = [ $object->getName(), $object->getParent(), $object->getLvl() ];
+
+        $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
+        $stmt->execute([':parent_id' => $object->getParent()]);
+        $parent_rgt = $stmt->fetchColumn();
+
+        // Shift lft and rgt values to make space
+        $this->pdo->exec("UPDATE categories SET rgt = rgt + 2 WHERE rgt >= $parent_rgt");
+        $this->pdo->exec("UPDATE categories SET lft = lft + 2 WHERE lft > $parent_rgt");
+
+        // Insert the new node
+        $new_lft = $parent_rgt;
+        $new_rgt = $parent_rgt + 1;
+   
+        
+        $values = [ $object->getName(), $object->getParent(), $object->getLvl(), $new_lft, $new_rgt ];
         $this->insertStmt->execute($values);
         $id = $this->pdo->lastInsertId();
         $object->setId((int)$id);

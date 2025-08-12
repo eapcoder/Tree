@@ -11,6 +11,11 @@ use Tree\Exception\AppException;
 use Tree\Mappers\Mapper;
 use Tree\Tree;
 
+/**
+ * Experimental function 
+ * 
+ */
+
 trait TreeRebuilder
 {
     public ?bool $withRoot = false;
@@ -56,11 +61,11 @@ trait TreeRebuilder
             $tree->setLeft($left);
             $tree->setRight($this->getTotal($tree->getId()) * 2);
             ++$level;
-            dump($tree);
-            dump($this->getTotal($tree->getId()));
+            //dump($tree);
+            //dump($this->getTotal($tree->getId()));
         }
 
-
+        $down = 0;
         foreach($tree->getChilds() as $key => $childs) {
             if(!$UpLevel) {
                 $left = $right = $right + 1;
@@ -70,11 +75,11 @@ trait TreeRebuilder
                 $UpLevel = false;
             }
             $up = (($lastlvl <=> $childs->getLvl()) == 1);
-            dump($up);
+           
+            //dump($up);
+            //dump($down);
             if ($childs->hasChilds()) {
-             
-              
-              
+                
                 $rightParent = $this->getTotal($childs->getId()) * 2 + $left - (($up) ? 0 : 1);
                 $childs->setRight($rightParent);
               
@@ -83,8 +88,7 @@ trait TreeRebuilder
                     $right = $rightParent;
                     $UpLevel = true;
                 }
-              
-               
+                             
             } else {
                 if ($up) { // 1
                     $left  = $rightParent + 1;
@@ -97,10 +101,11 @@ trait TreeRebuilder
             $lastlvl = $childs->getLvl();
             $childs->setLeft($left);
 
-            dump('$left = ' . $left . ' $right = ' . $right);
-            dump($childs);
+            //dump('$left = ' . $left . ' $right = ' . $right);
+            //dump($childs);
            
             if($childs->hasChilds()) {
+
                    $this->generate($childs, $left, $right, $t, $rightParent, $lastlvl, $UpLevel);
             }
 

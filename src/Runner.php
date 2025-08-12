@@ -28,12 +28,17 @@ class Runner extends SetupDb
         $ch1->setName('Child 1 The Space');
     
         $ch2 = new Child(-1, 'Child 3', $tree->getId());
-        $ch3 = new Child(-1, 'Child 4', $tree->getId());
+        $ch3 = new Child(-1, 'Child 3.1', $tree->getId());
         $ch2->addChild($ch3);
-        $ch41 = new Child(-1, 'Child 4.1', $tree->getId());
+        $ch41 = new Child(-1, 'Child 3.2', $tree->getId());
         $ch2->addChild($ch41);
-        $ch42 = new Child(-1, 'Child 4.2', $tree->getId());
+        $ch42 = new Child(-1, 'Child 3.3', $tree->getId());
+        $ch331 = new Child(-1, 'Child 3.3.1', $tree->getId());
+        $ch42->addChild($ch331);
         $ch2->addChild($ch42);
+
+      
+
         $ch1->addChild($ch2);
 
         $ch4 = new Child(-1, 'Child 5', $tree->getId());
@@ -41,9 +46,15 @@ class Runner extends SetupDb
         $ch4->addChild($ch51);
         $ch52 = new Child(-1, 'Child 5.2', $tree->getId());
         $ch4->addChild($ch52);
+        $ch53 = new Child(-1, 'Child 5.3', $tree->getId());
+        $ch4->addChild($ch53);
         $ch1->addChild($ch4);
 
         $ch5 = new Child(-1, 'Child 6', $tree->getId());
+        $ch61 = new Child(-1, 'Child 6.1', $tree->getId());
+        $ch5->addChild($ch61);
+        $ch62 = new Child(-1, 'Child 6.2', $tree->getId());
+        $ch5->addChild($ch62);
         $ch1->addChild($ch5);
 
         $tree->addChild($ch1);

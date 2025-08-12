@@ -14,17 +14,17 @@ class Html
         
     }
 
-    public static function generate($tree = null) {
+    public static function generate($tree = null, $dev = false) {
         
         self::$html .= '<ul>';
         foreach($tree as $item) {
 
             if (count($item['children'])) {
-                self::$html .= '<li>' . $item['name'] . '</li>';
-                self::generate($item['children']);
+                self::$html .= '<li>' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">'. $item['rgt'] . "</span>" : "") .  '</li>';
+                self::generate($item['children'], $dev);
                 
             } else {
-                self::$html .= '<li>' . $item['name'] . '</li>';
+                self::$html .= '<li>' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">' . $item['rgt'] . "</span>" : "") . '</li>';
             }
         }
         self::$html .= '</ul>';
