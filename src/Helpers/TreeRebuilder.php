@@ -138,4 +138,27 @@ trait TreeRebuilder
         $f = $t->fetch();
         return $f[0];
     }
+
+    public function rebuild($object) {
+      
+
+        $tree = $this->getTree(1);
+    
+         
+        if (! $tree && !$object->hasParent) {
+            throw new AppException("cannot save without prent tree");
+        }
+        
+        $target_rgt = $object->getRight();
+        $target_lft = $object->getLeft();
+
+        $this->pdo->exec("SET @width = $target_rgt - $target_lft + 1");
+        // Shift lft and rgt values to make space
+        $this->pdo->exec("DELETE FROM categories WHERE lft BETWEEN $target_lft AND $target_rgt");
+        $this->pdo->exec("UPDATE categories SET rgt = rgt - @width WHERE rgt > $target_rgt");
+        $this->pdo->exec("UPDATE categories SET lft = lft - @width WHERE lft > $target_rgt");
+
+    
+
+    }
 }

@@ -57,4 +57,5 @@ abstract class DomainObject
     {
         
     }
+    public function remove(): void {}
 }

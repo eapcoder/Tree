@@ -62,7 +62,7 @@ class Runner extends SetupDb
         
         $tree->save();
       
-        
+
         $treeMapper = new TreeMapper('categories', ['simpleArray' => true]);
         $tree = $treeMapper->getTree(1);
         dump($tree);
@@ -120,14 +120,9 @@ class Runner extends SetupDb
         self::run();
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(4);
-        dump($tree);
-        dump($tree->getId());
-        $new = new Child(-1, 'New Child', $tree->getId());
-
-        $subchild = new Child(-1, 'New Sub child', $tree->getId());
-        $new->addChild($subchild);
-        $new->setName('New Child space');
+        $tree = $treeMapper->find(7);
+      
+        $new = new Child(-1, '2.3.1.1', $tree->getId());
         $tree->addChild($new);
         $tree->save();
     }
@@ -171,5 +166,20 @@ class Runner extends SetupDb
         return $tree;
     }
 
+    /**
+     * Find tree element and remove it
+     */
+    public static function run9()
+    {
+        
+        self::run5();
 
+        self::setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(3);
+        dump($tree);
+
+        //$tree->remove();
+    }
 }
+

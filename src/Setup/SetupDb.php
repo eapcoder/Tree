@@ -50,7 +50,7 @@ class SetupDb {
         } else {
             $pdo->query("DROP TABLE IF EXISTS categories");
             $pdo->query("CREATE TABLE categories 
-            ( id INTEGER PRIMARY KEY $autoincrement, name TEXT, parent_id INTEGER REFERENCES categories, left INTEGER, rgt INTEGER, lvl INTEGER)");
+            ( id INTEGER PRIMARY KEY $autoincrement, name TEXT, parent_id INTEGER REFERENCES categories, lft INTEGER, rgt INTEGER, lvl INTEGER)");
         }
       
         

@@ -8,16 +8,20 @@ use Tree\Collection\TreeCollection;
 use Tree\DomainObject;
 use Tree\Exception\AppException;
 use Tree\Helpers\Html;
+use Tree\Helpers\TreeRebuilder;
 use Tree\Tree;
 
 class TreeMapper extends Mapper
 {
+    use TreeRebuilder;
+
     private \PDOStatement $selectStmt;
     private \PDOStatement $selectNullStmt;
     private \PDOStatement $selectByStmt;
     private \PDOStatement $selectTreeStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
+    private \PDOStatement $removeStmt;
     private \PDOStatement $updateParentStmt;
     private \PDOStatement $insertStmt;
     private $parentId;
@@ -40,6 +44,10 @@ class TreeMapper extends Mapper
 
         $this->updateStmt = $this->pdo->prepare(
             "UPDATE $table SET name=?, id=? WHERE id=?"
+        );
+
+        $this->removeStmt = $this->pdo->prepare(
+            "DELETE FROM $table WHERE id=?"
         );
 
         $this->updateParentStmt = $this->pdo->prepare(
@@ -85,8 +93,8 @@ class TreeMapper extends Mapper
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
      
-        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id']);
-       
+        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt']);
+        
         if($withChild) {
             $childMapper = new ChildMapper();   
             $child = $childMapper->findByTree($array['id']);
@@ -127,6 +135,21 @@ class TreeMapper extends Mapper
         $this->updateStmt->execute($values);
     }
 
+    public function remove(DomainObject $object): void
+    {
+        $values = [$object->getId()];
+        $this->removeStmt->execute($values);
+        
+        if($this->removeStmt->execute($values)) {
+            $this->rebuild($object);
+        }
+
+    }
+
+    public function remove2(): int
+    {
+        return 123;
+    }
     public function updateParent(DomainObject $object, $current): void
     {
 

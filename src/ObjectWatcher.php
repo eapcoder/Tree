@@ -124,7 +124,7 @@ class ObjectWatcher
             print "inserting " . $obj->getName() . "\n";
         }
         
-        $this->rebuild($fitstId);
+        //$this->rebuild($fitstId);
         $this->dirty = [];
         $this->new = [];
     }
