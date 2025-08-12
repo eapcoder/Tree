@@ -179,7 +179,36 @@ class Runner extends SetupDb
         $tree = $treeMapper->find(3);
         dump($tree);
 
-        //$tree->remove();
+        $tree->remove();
     }
+
+    /**
+     * Find tree element and remove it
+     */
+    public static function run10()
+    {
+
+        self::run();
+        self::run5();
+       
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(15);
+        $tree->moveLevelUp();
+
+    }
+
+    /**
+     * Find tree element and remove it
+     */
+    public static function run11()
+    {
+        //self::run();
+        //self::run5();
+        self::setMysql();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(4);
+        $tree->moveUp();
+    }
+
 }
 

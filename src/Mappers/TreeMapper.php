@@ -92,8 +92,8 @@ class TreeMapper extends Mapper
 
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
-     
-        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt']);
+       
+        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
         
         if($withChild) {
             $childMapper = new ChildMapper();   
@@ -145,6 +145,20 @@ class TreeMapper extends Mapper
         }
 
     }
+
+    public function moveLevelUp(DomainObject $object): void
+    {
+        
+        $this->moveUpandRebuid($object);
+
+    }
+
+    public function moveUp(DomainObject $object): void
+    {
+
+        $this->moveUpInOneLevel($object);
+    }
+
 
     public function remove2(): int
     {
@@ -304,11 +318,11 @@ class TreeMapper extends Mapper
         $parentChild = array();
         $raws[0]['parent_id'] = null;
         //ksort($raws);
-       
-        
+
+
       
         $this->makeParentChildRelations($raws, $parentChild);
-        
+        dump($parentChild);
         
         if(isset($this->options['html']) && $this->options['html'] === true) {
          

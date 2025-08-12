@@ -13,8 +13,8 @@ class Tree extends DomainObject
     private ?ChildCollection $childs = null;
     private ?bool $hasChild = false;
     
-    protected ?int $lvl = null;
-    public function __construct(int $id, private string $name, private int|null $parent_id = null, private int $lft = 0, private int  $rgt = 0)
+    
+    public function __construct(int $id, private string $name, private int|null $parent_id = null, private int $lft = 0, private int  $rgt = 0, private $lvl = null)
     {
         parent::__construct($id);
     }
@@ -85,6 +85,17 @@ class Tree extends DomainObject
     {
         ObjectWatcher::instance()->performOperations();
         
+    }
+
+    public function moveLevelUp(): void
+    {
+        $this->getFinder()->moveLevelUp($this);
+    }
+
+
+    public function moveUp(): void
+    {
+        $this->getFinder()->moveUp($this);
     }
 
     public function remove(): void

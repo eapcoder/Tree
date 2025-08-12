@@ -6,8 +6,8 @@ use Tree\Runner;
 
 addHtml();
 
-$result = Runner::run9();
+$result = Runner::run11();
 
-$result = Runner::run6();
+//$result = Runner::run6();
 
 ?>
