@@ -27,41 +27,42 @@ class Runner extends SetupDb
         $ch1 = new Child(-1, 'Child 1 The Space Upstairs', $tree->getId());
         $ch1->setName('Child 1 The Space');
     
-        $ch2 = new Child(-1, 'Child 3', $tree->getId());
-        $ch3 = new Child(-1, 'Child 3.1', $tree->getId());
-        $ch2->addChild($ch3);
-        $ch41 = new Child(-1, 'Child 3.2', $tree->getId());
-        $ch2->addChild($ch41);
-        $ch42 = new Child(-1, 'Child 3.3', $tree->getId());
-        $ch331 = new Child(-1, 'Child 3.3.1', $tree->getId());
-        $ch42->addChild($ch331);
-        $ch2->addChild($ch42);
+        $ch2 = new Child(-1, 'Child 2', $tree->getId());
+        $ch21 = new Child(-1, 'Child 2.1', $tree->getId());
+        $ch2->addChild($ch21);
+        $ch22 = new Child(-1, 'Child 2.2', $tree->getId());
+        $ch2->addChild($ch22);
 
-      
-
+        $ch23 = new Child(-1, 'Child 2.3', $tree->getId());
+        $ch231 = new Child(-1, 'Child 2.3.1', $tree->getId());
+        $ch23->addChild($ch231);
+        $ch2->addChild($ch23);
+        
         $ch1->addChild($ch2);
 
-        $ch4 = new Child(-1, 'Child 5', $tree->getId());
-        $ch51 = new Child(-1, 'Child 5.1', $tree->getId());
-        $ch4->addChild($ch51);
-        $ch52 = new Child(-1, 'Child 5.2', $tree->getId());
-        $ch4->addChild($ch52);
-        $ch53 = new Child(-1, 'Child 5.3', $tree->getId());
-        $ch4->addChild($ch53);
-        $ch1->addChild($ch4);
+        $ch3 = new Child(-1, 'Child 3', $tree->getId());
+        $ch31 = new Child(-1, 'Child 3.1', $tree->getId());
+        $ch3->addChild($ch31);
+        $ch32 = new Child(-1, 'Child 3.2', $tree->getId());
+        $ch3->addChild($ch32);
+        $ch33 = new Child(-1, 'Child 3.3', $tree->getId());
+        $ch3->addChild($ch33);
+        
+        $ch1->addChild($ch3);
 
-        $ch5 = new Child(-1, 'Child 6', $tree->getId());
-        $ch61 = new Child(-1, 'Child 6.1', $tree->getId());
-        $ch5->addChild($ch61);
-        $ch62 = new Child(-1, 'Child 6.2', $tree->getId());
-        $ch5->addChild($ch62);
-        $ch1->addChild($ch5);
+        $ch4 = new Child(-1, 'Child 4', $tree->getId());
+        $ch41 = new Child(-1, 'Child 4.1', $tree->getId());
+        $ch4->addChild($ch41);
+        $ch42 = new Child(-1, 'Child 4.2', $tree->getId());
+        $ch4->addChild($ch42);
+       
+        $ch1->addChild($ch4);
 
         $tree->addChild($ch1);
         
-        //ObjectWatcher::instance()->performOperations();
         $tree->save();
       
+        
         $treeMapper = new TreeMapper('categories', ['simpleArray' => true]);
         $tree = $treeMapper->getTree(1);
         dump($tree);
