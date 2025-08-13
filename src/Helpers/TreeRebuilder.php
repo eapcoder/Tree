@@ -136,8 +136,8 @@ trait TreeRebuilder
             if ($id ==  $child->getId()) {
                 
                 if ($i > 1) {
-                    dump($i);
-                    dump($items[$i-1]);
+                   /*  dump($i);
+                    dump($items[$i-1]); */
                     $items = array_reverse($items);
                 }
             } else {
@@ -145,18 +145,21 @@ trait TreeRebuilder
                 
             }
            
+          $child->remove();
           
         }
         $parent = $this->find($object->getParent());
+        $parent->removeChilds();
+        
         foreach($items as $item) {
             $item->setId(-1);
+            $item->markNew();
             $parent->addChild($item);
         }
+        dump($parent);
         $parent->save();
          
-        
-        
-        
+
     }
 
     /**

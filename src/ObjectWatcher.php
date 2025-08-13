@@ -90,12 +90,14 @@ class ObjectWatcher
             }
         );
     }
-
+    /**
+     * Main function to insert child in tree structure
+     * @return void
+     */
     public function performOperations(): void
     {
         
         foreach ($this->dirty as $key => $obj) {
-           
             $obj->getFinder()->update($obj);
         }
         

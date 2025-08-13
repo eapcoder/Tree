@@ -201,8 +201,8 @@ class Runner extends SetupDb
      */
     public static function run11()
     {
-        //self::run();
-        //self::run5();
+        self::run();
+        self::run5();
         self::setMysql();
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(5);

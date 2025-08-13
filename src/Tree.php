@@ -36,6 +36,12 @@ class Tree extends DomainObject
         $this->hasChild = true;
     }
 
+    public function removeChilds(): void
+    {
+        $this->childs = null;
+        $this->hasChild = false;
+    }
+
     public function addChild(Child $child): void
     {
         
@@ -81,9 +87,20 @@ class Tree extends DomainObject
         return $this->hasChild;
     }
 
+
+    public function checkIsNewTreeElement()
+    {
+        foreach($this->getChilds() as $child) {
+            dump($child);
+        }
+        
+    }
+
     public function save()
     {
+
         ObjectWatcher::instance()->performOperations();
+        
         
     }
 

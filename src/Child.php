@@ -165,5 +165,9 @@ class Child extends DomainObject
         return $this;
     }
 
+    public function remove(): void
+    {
+        $this->getFinder()->remove($this);
+    }
 
 }

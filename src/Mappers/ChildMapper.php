@@ -19,6 +19,7 @@ class ChildMapper extends Mapper
     private \PDOStatement $findByTreeStmt;
     private \PDOStatement $updateLvlStmt;
     private \PDOStatement $selectByStmt;
+    private \PDOStatement $removeStmt;
 
     public function __construct()
     {
@@ -35,6 +36,9 @@ class ChildMapper extends Mapper
         );
         $this->insertStmt = $this->pdo->prepare(
             "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
+        );
+        $this->removeStmt = $this->pdo->prepare(
+            "DELETE FROM categories WHERE id=?"
         );
 
         $this->selectAllStmt = $this->pdo->prepare(
@@ -148,4 +152,16 @@ class ChildMapper extends Mapper
         
         //return new ChildCollection([$obj], $this);
     }
+
+
+    public function remove(DomainObject $object): void
+    {
+        $values = [$object->getId()];
+        $this->removeStmt->execute($values);
+
+        if ($this->removeStmt->execute($values)) {
+            //$this->rebuild($object);
+        }
+    }
+
 }
