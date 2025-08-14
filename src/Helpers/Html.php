@@ -18,13 +18,13 @@ class Html
         
         self::$html .= '<ul>';
         foreach($tree as $item) {
-
+            $dev = ($dev) ? '#' . ' <span class="var-id"> ' . $item['id'] . '</span>' : '';
             if (count($item['children'])) {
-                self::$html .= '<li>' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">'. $item['rgt'] . "</span>" : "") .  '</li>';
+                self::$html .= '<li>' . $dev . ' ' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">'. $item['rgt'] . "</span>" : "") .  '</li>';
                 self::generate($item['children'], $dev);
                 
             } else {
-                self::$html .= '<li>' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">' . $item['rgt'] . "</span>" : "") . '</li>';
+                self::$html .= '<li>' . $dev . ' ' . $item['name'] . (($dev) ? ' <span class="var"> ' . $item['lft'] . '</span> - <span class="var">' . $item['rgt'] . "</span>" : "") . '</li>';
             }
         }
         self::$html .= '</ul>';

@@ -6,6 +6,8 @@ namespace Tree\Mappers;
 
 use Tree\Child;
 use Tree\Collection\TreeCollection;
+use Tree\Conf\Conf;
+use Tree\Conf\Registry;
 use Tree\DomainObject;
 use Tree\Exception\AppException;
 use Tree\Helpers\Html;
@@ -144,10 +146,10 @@ class TreeMapper extends Mapper
         }
     }
 
-    public function moveLevelUp(DomainObject $object): void
+    public function moveLevelUp(DomainObject $object): array
     {
 
-        $this->moveUpandRebuid($object);
+        return $this->moveUpandRebuid($object);
     }
 
     public function moveUp(DomainObject $object): void
@@ -310,11 +312,11 @@ class TreeMapper extends Mapper
 
        
         $this->makeParentChildRelations($raws, $parentChild);
-        dump($parentChild);
-
+        
         if (isset($this->options['html']) && $this->options['html'] === true) {
-
-            return Html::generate($parentChild, true);
+            $reg = Registry::instance();
+                       
+            return Html::generate($parentChild, $reg->getConf()->get('dev'));
         } else if (in_array('simpleArray', $this->options) && $this->options['simpleArray'] === true) {
             return $parentChild;
         } else {

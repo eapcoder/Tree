@@ -182,22 +182,21 @@ class Runner extends SetupDb
     }
 
     /**
-     * Find tree element and remove it
+     * Find element and move it up to next level
      */
     public static function run10()
     {
-
         self::run();
         self::run5();
        
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(15);
+        $tree = $treeMapper->find(18);
         $tree->moveLevelUp();
 
     }
 
     /**
-     * Find tree element and remove it
+     * Find tree element and move it up in one level
      */
     public static function run11()
     {
@@ -205,8 +204,17 @@ class Runner extends SetupDb
         self::run5();
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(5);
+        $tree = $treeMapper->find(6);
+        $tree->setName("Now child 2.2");
+        $treeMapper->update($tree);
         $tree->moveUp();
+
+        $tree = $treeMapper->find(20);
+        $tree->setName("Now child 2.3");
+        $treeMapper->update($tree);
+
+       /*  $tree = $treeMapper->find(18);
+        $tree->moveLevelUp(); */
     }
 
 }

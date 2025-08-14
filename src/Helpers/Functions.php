@@ -12,6 +12,6 @@ function trace()
 
 function addHtml()
 {
-    echo '<html><head><style>body { background-color:#000; color:#fff;} span.var {border:1px solid #cececeff; border-radius:3px; background-color:#7b14f0ff;padding:3px;}</style></html>';
 }
+echo '<html><head><style>body { background-color:#000; color:#fff;} span.var,span.var-id {border:1px solid #cececeff; border-radius:3px; background-color:#7b14f0ff;padding:3px;} span.var-id {background-color:#1f94f3ff;} ul li {line-height:1.7rem;}</style></html>';
 ?>

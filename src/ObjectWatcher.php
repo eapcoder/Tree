@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 namespace Tree;
+
+use Tree\Conf\Registry;
 use Tree\Helpers\TreeRebuilder;
 
 class ObjectWatcher
@@ -94,9 +96,9 @@ class ObjectWatcher
      * Main function to insert child in tree structure
      * @return void
      */
-    public function performOperations(): void
+    public function performOperations(): array
     {
-        
+        $return = [];
         foreach ($this->dirty as $key => $obj) {
             $obj->getFinder()->update($obj);
         }
@@ -123,12 +125,15 @@ class ObjectWatcher
             } else {
             }
 
-            print "inserting " . $obj->getName() . "\n";
+            $reg = Registry ::instance();
+            if($reg->getConf()->get('dev')) print "inserting " . $obj->getName() . "\n";
+            array_push($return, $obj);
         }
         
         //$this->rebuild($fitstId);
         $this->dirty = [];
         $this->new = [];
+        return $return;
     }
     
     protected function rebuild($fitstId): void

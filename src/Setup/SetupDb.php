@@ -71,7 +71,7 @@ class SetupDb {
         $config = dirname(__DIR__) . "/data/options.ini";
         $options = parse_ini_file($config, true);
         $reg = Registry::instance();
-        $conf = new Conf($options['mysql']);
+        $conf = new Conf($options['mysql'] + $options['config']);
         $reg->setConf($conf);
          
     }

@@ -99,14 +99,14 @@ class Tree extends DomainObject
     public function save()
     {
 
-        ObjectWatcher::instance()->performOperations();
+        return ObjectWatcher::instance()->performOperations();
         
         
     }
 
-    public function moveLevelUp(): void
+    public function moveLevelUp(): mixed
     {
-        $this->getFinder()->moveLevelUp($this);
+        return $this->getFinder()->moveLevelUp($this);
     }
 
 
