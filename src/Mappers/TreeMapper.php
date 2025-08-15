@@ -21,7 +21,7 @@ class TreeMapper extends Mapper
     private \PDOStatement $selectStmt;
     private \PDOStatement $selectNullStmt;
     private \PDOStatement $selectByStmt;
-    private \PDOStatement $selectTreeStmt;
+    public \PDOStatement $selectTreeStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
     private \PDOStatement $removeStmt;
@@ -97,7 +97,9 @@ class TreeMapper extends Mapper
     {
 
         $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
-
+       
+       
+       
         if ($withChild) {
             $childMapper = new ChildMapper();
             $child = $childMapper->findByTree($array['id']);
@@ -367,6 +369,8 @@ class TreeMapper extends Mapper
 
         
             $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
+            $child->setRight($rawchild['rgt'] ?? null);
+            $child->setLeft($rawchild['lft'] ?? null);
            
             
                 if($parentChild) {

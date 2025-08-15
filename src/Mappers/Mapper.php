@@ -19,13 +19,14 @@ abstract class Mapper
     {
         $reg = Registry::instance();
         $this->pdo = $reg->getPdo();
-        //$this->pdo = $reg->getMyPdo();
+       
     }
 
     public function find(int $id): DomainObject
     {
+       
         $old = $this->getFromMap($id);
-     
+      
         if (! is_null($old)) {
             return $old;
         }
@@ -33,15 +34,14 @@ abstract class Mapper
         $this->selectstmt()->execute([$id]);
         $raw = $this->selectstmt()->fetch();
         $this->selectstmt()->closeCursor();
-
+       
         if (! is_array($raw) || ! isset($raw['id'])) {
            throw new AppException('Sql record not fonud');
         }
-
         
-     
         $object = $this->createObject($raw);
-
+       
+     
         return $object;
     }
 
@@ -86,6 +86,7 @@ abstract class Mapper
         return $object;
     }
 
+    
     private function getFromMap($id, $findBy = false): ?DomainObject
     {
      
@@ -100,25 +101,22 @@ abstract class Mapper
         return ObjectWatcher::add($obj);
     }
 
-    /* listing 13.26 */
-
     // Mapper
 
     public function createObject($raw): DomainObject
     {
+       
         $old = $this->getFromMap($raw['id']);
 
         if (! is_null($old)) {
             return $old;
         }
-        
-      
+       
         $obj = $this->doCreateObject($raw);
         $this->addToMap($obj);
-
+       
         return $obj;
     }
-    /* /listing 13.26 */
 
     public function insert(DomainObject $obj): void
     {

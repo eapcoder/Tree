@@ -45,6 +45,20 @@ class ObjectWatcher
         return $obj;
     }
 
+
+    public static function ClearAll(): ?array
+    {
+        $inst = self::instance();
+        return $inst->all = [];
+    }
+
+    public static function all(): ?array
+    {
+        $inst = self::instance();
+        
+        return $inst->all;
+    }
+
     public static function exists($classname, $id): ?DomainObject
     {
         $inst = self::instance();
@@ -104,8 +118,7 @@ class ObjectWatcher
         }
         
         $fitstId = $this->new[0]->getId() ?? null;
-
-       
+        
         foreach ($this->new as $key => $obj) {
             
             if ($obj instanceof Tree) {
@@ -133,6 +146,7 @@ class ObjectWatcher
         //$this->rebuild($fitstId);
         $this->dirty = [];
         $this->new = [];
+        ObjectWatcher::ClearAll();
         return $return;
     }
     

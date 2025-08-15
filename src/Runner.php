@@ -63,9 +63,8 @@ class Runner extends SetupDb
         $tree->save();
       
 
-        $treeMapper = new TreeMapper('categories', ['simpleArray' => true]);
-        $tree = $treeMapper->getTree(1);
-        dump($tree);
+       
+   
         return $tree;
     }
 
@@ -200,18 +199,16 @@ class Runner extends SetupDb
      */
     public static function run11()
     {
-        self::run();
-        self::run5();
+      
         self::setMysql();
+      
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(6);
-        $tree->setName("Now child 2.2");
-        $treeMapper->update($tree);
+        $tree = $treeMapper->find(20);
+        
+     
         $tree->moveUp();
 
-        $tree = $treeMapper->find(20);
-        $tree->setName("Now child 2.3");
-        $treeMapper->update($tree);
+      
 
        /*  $tree = $treeMapper->find(18);
         $tree->moveLevelUp(); */

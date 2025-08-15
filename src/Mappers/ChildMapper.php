@@ -8,9 +8,12 @@ use Tree\Child;
 use Tree\Collection\ChildCollection;
 use Tree\DomainObject;
 use Tree\Exception\AppException;
+use Tree\Helpers\TreeRebuilder;
 
 class ChildMapper extends Mapper
 {
+    use TreeRebuilder;
+
     private \PDOStatement $selectStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $selectTreeStmt;
@@ -38,7 +41,7 @@ class ChildMapper extends Mapper
             "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
         );
         $this->removeStmt = $this->pdo->prepare(
-            "DELETE FROM categories WHERE id=?"
+            "DELETE FROM categories WHERE id=? LIMIT 1"
         );
 
         $this->selectAllStmt = $this->pdo->prepare(
@@ -61,15 +64,14 @@ class ChildMapper extends Mapper
         return new ChildCollection($raw, $this);
     }
 
-/* listing 13.29 */
-
-    // ChildMapper
 
     protected function doCreateObject(array $raw): Child
-    {
-        
+    { 
+      
         $obj = new Child((int)$raw['id'], $raw['name'], $raw['parent_id'],  $raw['lvl']);
-       
+        $obj->setRight($raw['lft'] ?? null);
+        $obj->setLeft($raw['rgt']  ?? null);
+     
         $treeMapper = new TreeMapper();
         //$tree = $treeMapper->find((int)$raw['parent_id']);
         //$obj->setTree($tree);
@@ -77,12 +79,10 @@ class ChildMapper extends Mapper
         //$EventMapper = new EventMapper();
         //$eventCollection = $EventMapper->findByChildId((int)$raw['id']);
         //$obj->setEvents($eventCollection);
-
+       
         return $obj;
     }
-/* /listing 13.29 */
-
-    // SpaceMapper
+    
 
     protected function targetClass(): string
     {
@@ -163,7 +163,8 @@ class ChildMapper extends Mapper
         $this->removeStmt->execute($values);
 
         if ($this->removeStmt->execute($values)) {
-            //$this->rebuild($object);
+           
+            $this->testRebuild($object);
         }
     }
 
