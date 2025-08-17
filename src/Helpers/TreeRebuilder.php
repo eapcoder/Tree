@@ -270,11 +270,21 @@ trait TreeRebuilder
             $items[$i] = $child;
             if ($id ==  $child->getId()) { // смена текущего с верхним элементом child
                 if ($i > 1) {
-                    $prev = $items[$i-1];
-                    $items[$i-1] = $child;
-                    $items[$i] = $prev;
+                    $child->setRebuild($items[$i-1]->getId());
+                    $prev = $items[$i-1]; // меняем местами
+                    $items[$i-1] = $child; // меняем местами
+                    $prev->setRebuild($items[$i]->getId());
+                    $items[$i] = $prev; // меняем местами
+                    if($child->hasChilds()) {
+                        foreach($child->getChilds() as $childInner) {
+                           // dump($childInner);
+                            $childInner->setParentRebuild($child->getRebuild());
+                            $childInner->setRebuild($childInner->getId());
+                        }
+                    }
                 }
             } else { // присоединнеие остальных child
+                $child->setRebuild($items[$i]->getId());
                 $items[$i] = $child;
                 
             }
@@ -289,14 +299,80 @@ trait TreeRebuilder
       
         $parent = $this->find($object->getParent());
         $parent->removeChilds();
-        
+       
         foreach($items as $item) { // воссоздание child с учётом смена текущего с верхним элементом child
+           
             $item->setId(-1);
+           
             $item->markNew();
             $parent->addChild($item);
         }
-        $parent->save();  
+      
+        $previds = $parent->save();  
+        dump($previds);
+        $this->updateId($previds);
  
+    }
+    
+
+    public function updateId($items)
+    {
+        foreach ($items as $key => $obj) {
+           
+            if ($obj instanceof Tree) {
+              
+                    $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
+            } else {
+
+                
+                $this->performOperationsForChilds($obj, $lvl = 1, $obj->getParent());
+            }
+        }
+    }
+
+
+    public function performOperationsForChilds($childs, $lvl, $parent_id, $rebuild = false): void
+    {
+       
+        if ($childs instanceof Child) {
+            $r = $childs->getRebuild();
+           
+            $newParent = (!empty($childs->getParentRebuild())) ? ', parent_id  = ' . $childs->getParentRebuild() : '';
+          
+            if($rebuild != 0) {
+                $stmt = $this->pdo->prepare("UPDATE categories SET id = $r $newParent WHERE id = :id");
+                $stmt->execute([':id' => $childs->getId()]);
+            } else {
+                $stmt = $this->pdo->prepare("UPDATE categories SET id = $r $newParent WHERE id = :id");
+                $stmt->execute([':id' => $childs->getId()]);
+            }
+            
+
+            if ($childs->hasChilds()) {
+                
+                $this->performOperationsForChilds($childs->getChilds(), $lvl, $childs->getId(),  $childs->getRebuild());
+            }
+        } else {
+            foreach ($childs as $child) {
+                
+                $this->performOperationsForChilds($child, $lvl, $parent_id);
+            }
+        }
+
+        /* 
+        
+        if ($childs instanceof Child) {
+            $childs->setLvl($lvl);
+            $childs->getFinder()->insert($childs);
+        } else {
+
+            
+
+            foreach ($childs as $child) {
+                
+                $this->performOperationsForChilds($child, $lvl);
+            }
+        } */
     }
 
 

@@ -114,7 +114,20 @@ class ChildMapper extends Mapper
         $values = [ $object->getName(), $object->getParent(), $object->getLvl(), $new_lft, $new_rgt ];
         $this->insertStmt->execute($values);
         $id = $this->pdo->lastInsertId();
+        
         $object->setId((int)$id);
+       
+        if(!empty($object->rebuild) ) {
+            $r = $object->rebuild;
+
+            dump($r);
+            dump("UPDATE categories SET id = $r WHERE id = $id");
+           
+            /*    $stmt = $this->pdo->prepare("UPDATE categories SET id = $r WHERE id = :id");
+            $stmt->execute([':id' => $id]);  */
+            
+        }
+        
     }
 
     public function update(DomainObject $object): void

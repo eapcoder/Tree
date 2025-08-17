@@ -17,6 +17,8 @@ class Child extends DomainObject
     public ?bool $hasParent = false;
     protected ?int $lft = 0;
     protected ?int $rgt = 0;
+    public ?int $rebuild = 0;
+    public ?int $parentRebuild = 0;
 
     public function __construct(int $id, private string $name, private int $parent_id, private ?int $lvl = null, private ?Tree $tree = null)
     {
@@ -168,6 +170,28 @@ class Child extends DomainObject
     public function remove(): void
     {
         $this->getFinder()->remove($this);
+    }
+
+    public function getRebuild(): int
+    {
+        return $this->rebuild;
+    }
+
+    public function setRebuild($rebuild)
+    {
+        $this->rebuild = $rebuild;
+        return $this;
+    }
+
+    public function getParentRebuild(): int
+    {
+        return $this->parentRebuild;
+    }
+
+    public function setParentRebuild($parentRebuild)
+    {
+        $this->parentRebuild = $parentRebuild;
+        return $this;
     }
 
 }

@@ -167,11 +167,11 @@ class ObjectWatcher
         if ($childs instanceof Child) {
          
             $lvl = $lvl + 1;
-            
+            //if($childs->rebuild) $childs->setId($childs->rebuild);
             $childs->setLvl($lvl);
             $childs->setParent($parent_id);
             $childs->getFinder()->insert($childs);
-           
+            
             if($childs->hasChilds()) $this->performOperationsForChilds($childs->getChilds(), $lvl, $childs->getId());
         } else {
             foreach ($childs as $child) {
