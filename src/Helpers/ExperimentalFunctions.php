@@ -46,6 +46,39 @@ trait ExperimentalFunctions
     }
 
 
+    function interpolateQuery($query, $params)
+    {
+        $keys = array();
+        $values = $params;
+
+        foreach ($params as $key => $value) {
+            if (is_string($key)) {
+                // Named parameter
+                $keys[] = '/:' . $key . '/';
+            } else {
+                // Positional parameter
+                $keys[] = '/[?]/';
+            }
+
+            // Quote string values for safe interpolation in the debug output
+            if (is_string($value)) {
+                $values[$key] = "'" . str_replace("'", "''", $value) . "'";
+            } elseif (is_array($value)) {
+                // Handle array values for IN clauses, etc.
+                $quotedValues = array_map(function ($val) {
+                    return "'" . str_replace("'", "''", $val) . "'";
+                }, $value);
+                $values[$key] = implode(",", $quotedValues);
+            } elseif (is_null($value)) {
+                $values[$key] = 'NULL';
+            }
+            // Numeric values don't require quoting
+        }
+
+        $query = preg_replace($keys, $values, $query, 1); // Limit to 1 replacement for positional placeholders
+        return $query;
+    }
+    
 
     /**
      * Experimental function 

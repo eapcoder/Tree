@@ -27,6 +27,8 @@ class TreeMapper extends Mapper
     private \PDOStatement $removeStmt;
     private \PDOStatement $updateParentStmt;
     private \PDOStatement $insertStmt;
+    private \PDOStatement $selectSiblingsStmt;
+
     private $parentId;
     public function __construct(private $table = 'categories', private $options = array())
     {
@@ -35,6 +37,10 @@ class TreeMapper extends Mapper
 
         $this->selectStmt = $this->pdo->prepare(
             "SELECT * FROM $table WHERE id=?"
+        );
+
+        $this->selectSiblingsStmt = $this->pdo->prepare(
+            "SELECT * FROM $table WHERE parent_id=? ORDER BY lft"
         );
 
         $this->selectNullStmt = $this->pdo->prepare(
@@ -79,7 +85,7 @@ class TreeMapper extends Mapper
                 FROM   $table, r
                 WHERE (r.id = $table.parent_id)
             )
-            SELECT * FROM r ORDER by id ASC;"
+            SELECT * FROM r ORDER by lft ASC;"
         );
     }
 
@@ -138,14 +144,21 @@ class TreeMapper extends Mapper
         $this->updateStmt->execute($values);
     }
 
+    /**
+     * Remove child item
+     */
+
     public function remove(DomainObject $object): void
     {
+        
         $values = [$object->getId()];
         $this->removeStmt->execute($values);
-
         if ($this->removeStmt->execute($values)) {
+            $this->selectSiblingsStmt()->execute([$object->getParent()]);
+            $siblings = $this->selectSiblingsStmt()->fetchAll();
             $this->rebuild($object);
         }
+      
     }
 
     public function moveLevelUp(DomainObject $object): array
@@ -158,6 +171,12 @@ class TreeMapper extends Mapper
     {
 
         $this->moveUpInOneLevel($object);
+    }
+
+    public function moveDown(DomainObject $object): void
+    {
+
+        $this->moveDownInOneLevel($object);
     }
 
 
@@ -176,6 +195,11 @@ class TreeMapper extends Mapper
     public function selectStmt(): \PDOStatement
     {
         return $this->selectStmt;
+    }
+
+    public function selectSiblingsStmt(): \PDOStatement
+    {
+        return $this->selectSiblingsStmt;
     }
 
     public function selectNullStmt(): \PDOStatement
@@ -271,12 +295,14 @@ class TreeMapper extends Mapper
             $raws = [];
             //$raws[] = ['parent_id' => null];
             $this->selectNullStmt->execute([null]);
-            $parentRaws =  $this->selectNullStmt->fetchAll();
-
-            foreach ($parentRaws as $elem) {
-
+            $parentRaw =  $this->selectNullStmt->fetchAll();
+            
+            foreach ($parentRaw as $elem) {
+                
                 $this->selectTreeStmt->execute([$elem['id']]);
                 $raws[] = $this->selectTreeStmt->fetchAll();
+              
+ 
             }
             $newArr = [];
             foreach ($raws as $key => $raw) {
@@ -299,7 +325,7 @@ class TreeMapper extends Mapper
             $this->parentId = $id;
             $this->selectTreeStmt->execute([$id]);
             $raws =  $this->selectTreeStmt->fetchAll();
-
+            dump($raws);
             foreach ($raws as $key => $raw) {
                 $raws[$key] = array_filter($raw, function ($key) {
                     return $key != '0' && $key != '1' && $key != '2';

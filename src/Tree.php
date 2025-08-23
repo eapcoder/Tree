@@ -115,6 +115,11 @@ class Tree extends DomainObject
         $this->getFinder()->moveUp($this);
     }
 
+    public function moveDown(): void
+    {
+        $this->getFinder()->moveDown($this);
+    }
+
     public function remove(): void
     {
         $this->getFinder()->remove($this);

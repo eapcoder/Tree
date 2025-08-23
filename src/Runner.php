@@ -123,6 +123,11 @@ class Runner extends SetupDb
         $new = new Child(-1, '2.3.1.1', $tree->getId());
         $tree->addChild($new);
         $tree->save();
+
+        $tree = $treeMapper->find(3);
+        $new = new Child(-1, '2.4', $tree->getId());
+        $tree->addChild($new);
+        $tree->save();
     }
 
     /**
@@ -169,14 +174,10 @@ class Runner extends SetupDb
      */
     public static function run9()
     {
-        
-        self::run5();
-
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(3);
-        dump($tree);
-
+        $tree = $treeMapper->find(4);
+        //
         $tree->remove();
     }
 
@@ -200,19 +201,37 @@ class Runner extends SetupDb
     public static function run11()
     {
         self::run();
-        self::setMysql();
-      
+        //self::setMysql();
+        self::run5();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(6);
-        
-     
+        $tree = $treeMapper->find(16);
         $tree->moveUp();
+ 
+        $tree = $treeMapper->find(16);
+        $tree->moveUp();
+       
+        $tree = $treeMapper->find(4)->moveDown();
+        $tree = $treeMapper->find(4)->moveDown();
 
-      
 
-       /*  $tree = $treeMapper->find(18);
+        /*  $tree = $treeMapper->find(18);
         $tree->moveLevelUp(); */
     }
 
+
+    /**
+     * Find tree element and move it up in one level
+     */
+    public static function run12()
+    {
+        //self::run();
+        self::setMysql();
+        //self::run5();
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(4)->moveDown();
+
+        /*  $tree = $treeMapper->find(18);
+        $tree->moveLevelUp(); */
+    }
 }
 

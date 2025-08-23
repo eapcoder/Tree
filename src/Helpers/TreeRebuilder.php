@@ -78,7 +78,7 @@ trait TreeRebuilder
     }
 
     /**
-     * Rebuild after remove
+     * Rebuild after remove, and remove childs in element that was deleted
      */
     public function rebuild($object) {
         $tree = $this->getTree(1);
@@ -97,6 +97,7 @@ trait TreeRebuilder
         $this->pdo->exec("UPDATE categories SET lft = lft - @width WHERE lft > $target_rgt");
 
     }
+
 
 
     /**
@@ -253,12 +254,14 @@ trait TreeRebuilder
         $tree = $this->newGetTree(1);
     }
 
+
+ 
     /**
      * Смена текущего с верхним элементом child на одном уровне
      */
     public function moveUpInOneLevel($object) {
         $id = $object->getId();
-
+        
         $parent = $this->getTree($object->getParent());
       
         $items = [];
@@ -270,50 +273,88 @@ trait TreeRebuilder
             $items[$i] = $child;
             if ($id ==  $child->getId()) { // смена текущего с верхним элементом child
                 if ($i > 1) {
-                    $child->setRebuild($items[$i-1]->getId());
+                    $child->setRebuildLft($items[$i-1]->getLeft());
+                    $child->setRebuildRgt(($child->getRight() - $child->getLeft()) + $items[$i-1]->getLeft());
                     $prev = $items[$i-1]; // меняем местами
+                    
                     $items[$i-1] = $child; // меняем местами
-                    $prev->setRebuild($items[$i]->getId());
+                    $prev->setRebuildLft($child->getRebuildRgt()+1);
+                    $prev->setRebuildRgt($items[$i]->getRight());
                     $items[$i] = $prev; // меняем местами
                     if($child->hasChilds()) {
-                        foreach($child->getChilds() as $childInner) {
-                           // dump($childInner);
-                            $childInner->setParentRebuild($child->getRebuild());
-                            $childInner->setRebuild($childInner->getId());
-                        }
+                        $this->recursiveSetNewWeight($child, 0, 'up');
+                    }
+                    if($prev->hasChilds()) {
+                        $this->recursiveSetNewWeight($prev, 0, 'up');
                     }
                 }
             } else { // присоединнеие остальных child
-                $child->setRebuild($items[$i]->getId());
-                $items[$i] = $child;
-                
+                $child->setRebuildLft($items[$i]->getId());
+               
+                          
             }
             //$child->remove(); // физическое удаление child
  
         }
 
-        $ids = $this->multiRemove($object,  $items);
-        $ids = substr($ids, 1);
-        $this->pdo->exec("DELETE FROM categories WHERE id IN ($ids)");
-        $this->testRebuild($object);
-      
-        $parent = $this->find($object->getParent());
-        $parent->removeChilds();
+        // dump($items);
+        $this->recursiveUpdateNewWeight($items);
        
-        foreach($items as $item) { // воссоздание child с учётом смена текущего с верхним элементом child
-           
-            $item->setId(-1);
-           
-            $item->markNew();
-            $parent->addChild($item);
-        }
-      
-        $previds = $parent->save();  
-        dump($previds);
-        $this->updateId($previds);
- 
     }
+
+    /**
+     * Обход рекурсивный дочерних элементов
+     */
     
+    public function recursiveSetNewWeight(&$child, $i = 0, $upDown = null): Child
+    {
+        $i = $i ?? 0;
+       
+        if ($child->hasChilds()) {
+         
+            foreach ($child->getChilds() as $childInner) {
+                ++$i;
+                $up1 = $upDown == 'down' ? $i : $i;
+                $up2 = $upDown == 'up' ? $i + 1 : $i + 1;
+                
+                $childInner->setParentRebuild($child->getRight() - $child->getLeft());
+                $childInner->setRebuildLft($child->getRebuildLft() + $up1);
+                $childInner->setRebuildRgt($child->getRebuildLft() + $up2);
+               
+                if ($childInner->hasChilds()) {
+                    $this->recursiveSetNewWeight($childInner, $i, $upDown);
+                }
+            }
+        }
+
+        return $child;
+    }
+
+    /**
+     * Обновление рекурсивное дочерних элементов
+     */
+    public function recursiveUpdateNewWeight($items, $i = 0, $upDown = null)
+    {
+        $i = $i ?? 0;
+
+        foreach ($items as $item) {
+            
+            if ($item->getRebuildLft() != 0 && $item->getRebuildRgt() != 0) {
+                $newlft = $item->getRebuildLft();
+                $newrgt = $item->getRebuildRgt();
+                $id = $item->getId();
+             
+                $this->pdo->exec("UPDATE categories SET rgt = $newrgt, lft = $newlft  WHERE id = $id");
+
+                if ($item->hasChilds()) {
+                    //dump($item->getChilds());
+                    $this->recursiveUpdateNewWeight($item->getChilds(), $i);
+                }
+            }
+        }
+
+        return $items;
+    }
 
     public function updateId($items)
     {
@@ -359,20 +400,7 @@ trait TreeRebuilder
             }
         }
 
-        /* 
-        
-        if ($childs instanceof Child) {
-            $childs->setLvl($lvl);
-            $childs->getFinder()->insert($childs);
-        } else {
-
-            
-
-            foreach ($childs as $child) {
-                
-                $this->performOperationsForChilds($child, $lvl);
-            }
-        } */
+  
     }
 
 
@@ -393,7 +421,67 @@ trait TreeRebuilder
     /**
      * //TODO
      */
-    public function moveDownInOneLevel($object) {}
+    public function moveDownInOneLevel($object) 
+    {
+        $id = $object->getId();
+      
+        $parent = $this->getTree($object->getParent());
+
+        $items = [];
+        $i = -1;
+        $childToRemove = [];
+        foreach ($parent->getChilds() as $child) {
+            array_push($items,$child);
+        }
+       
+        foreach ($items as $child) {
+
+            ++$i;
+
+          
+           
+            if ($id ==  $child->getId()) { // смена текущего с нижним элементом child
+               // dump($i);
+                //dump($child);
+                if ($i < count($parent->getChilds())-1) {
+                    $movedChild = $child;
+
+                    $next = $items[$i + 1]; // меняем местами
+               
+                    $next->setRebuildLft($movedChild->getLeft());
+                    $next->setRebuildRgt($movedChild->getLeft()+ ($items[$i + 1]->getRight() - $items[$i + 1]->getLeft()));
+
+                   
+                    $movedChild->setRebuildLft($movedChild->getLeft() + ($items[$i + 1]->getRight() - $items[$i + 1]->getLeft()) + 1);
+                    $movedChild->setRebuildRgt($movedChild->getRebuildLft() + ($movedChild->getRight() - $movedChild->getLeft()));
+
+                 
+                    $items[$i+1] = $movedChild; // меняем местами
+                    
+                    $items[$i] = $next; // меняем местами
+                   
+                    if ($movedChild->hasChilds()) {
+                        $this->recursiveSetNewWeight($movedChild, 0, 'down');
+                    }
+                    if ($next->hasChilds()) {
+                        $this->recursiveSetNewWeight($next, 0, 'down');
+                    }
+                    dump($i);
+                   
+                }
+            } else { // присоединнеие остальных child
+                if(empty($next)) {
+                    $child->setRebuildLft($items[$i]->getId());
+                }
+            }
+            //$child->remove(); // физическое удаление child
+            
+        }
+       
+        dump($items);
+        $this->recursiveUpdateNewWeight($items);
+
+    }
 
 
 
