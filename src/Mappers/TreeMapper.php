@@ -154,7 +154,7 @@ class TreeMapper extends Mapper
             $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
             $stmt->execute([':parent_id' => $object->getParent()]);
             $parent_rgt = $stmt->fetchColumn();
-
+          
 
             $this->insertStmt->execute($values);
             $id = $this->pdo->lastInsertId();
@@ -162,7 +162,7 @@ class TreeMapper extends Mapper
             print $e->getMessage();
         }
 
-        //dump($object);
+      
         $object->setId((int)$id);
     }
 

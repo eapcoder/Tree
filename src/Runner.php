@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 namespace Tree;
+
+use Tree\Mappers\ChildMapper;
 use Tree\Mappers\TreeMapper;
 use Tree\Setup\SetupDb;
 
@@ -120,12 +122,12 @@ class Runner extends SetupDb
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(7);
       
-        $new = new Child(-1, '2.3.1.1', $tree->getId());
+        $new = new Child(-1, 'Child 2.3.1.1', $tree->getId());
         $tree->addChild($new);
         $tree->save();
 
         $tree = $treeMapper->find(3);
-        $new = new Child(-1, '2.4', $tree->getId());
+        $new = new Child(-1, 'Child 2.4', $tree->getId());
         $tree->addChild($new);
         $tree->save();
     }
@@ -208,12 +210,14 @@ class Runner extends SetupDb
         $tree->moveUp();
 
         $four = $treeMapper->find(4);
+       
         $tree = $four->moveDown();
         $tree = $four->moveDown();
 
-
-        /*  $tree = $treeMapper->find(18);
-        $tree->moveLevelUp(); */
+        $childMapper = new ChildMapper();
+        $child = $childMapper->find(4);
+        $four->addChild($child);
+        $new = $four->save();
     }
 
 

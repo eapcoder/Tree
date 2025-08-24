@@ -72,14 +72,7 @@ class ChildMapper extends Mapper
         $obj->setRight($raw['lft'] ?? null);
         $obj->setLeft($raw['rgt']  ?? null);
      
-        $treeMapper = new TreeMapper();
-        //$tree = $treeMapper->find((int)$raw['parent_id']);
-        //$obj->setTree($tree);
-
-        //$EventMapper = new EventMapper();
-        //$eventCollection = $EventMapper->findByChildId((int)$raw['id']);
-        //$obj->setEvents($eventCollection);
-       
+         
         return $obj;
     }
     
@@ -97,31 +90,39 @@ class ChildMapper extends Mapper
         if (! $tree && !$object->hasParent) {
             throw new AppException("cannot save without prent tree");
         }
+        try {
 
-        $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
-        $stmt->execute([':parent_id' => $object->getParent()]);
-        $parent_rgt = $stmt->fetchColumn();
+            $stmt = $this->pdo->prepare("SELECT rgt FROM categories WHERE id = :parent_id");
+            $stmt->execute([':parent_id' => $object->getParent()]);
+            $parent_rgt = $stmt->fetchColumn();
 
-        // Shift lft and rgt values to make space
-        $this->pdo->exec("UPDATE categories SET rgt = rgt + 2 WHERE rgt >= $parent_rgt");
-        $this->pdo->exec("UPDATE categories SET lft = lft + 2 WHERE lft > $parent_rgt");
+            // Shift lft and rgt values to make space
+            $this->pdo->exec("UPDATE categories SET rgt = rgt + 2 WHERE rgt >= $parent_rgt");
+            $this->pdo->exec("UPDATE categories SET lft = lft + 2 WHERE lft > $parent_rgt");
 
-        // Insert the new node
-        $new_lft = $parent_rgt;
-        $new_rgt = $parent_rgt + 1;
-   
-        
-        $values = [ $object->getName(), $object->getParent(), $object->getLvl(), $new_lft, $new_rgt ];
-        $this->insertStmt->execute($values);
-        $id = $this->pdo->lastInsertId();
-        
-        $object->setId((int)$id);
-       
+            // Insert the new node
+            $new_lft = $parent_rgt;
+            $new_rgt = $parent_rgt + 1;
+    
+            
+            $values = [ $object->getName(), $object->getParent(), $object->getLvl(), $new_lft, $new_rgt ];
+            $this->insertStmt->execute($values);
+           
+            $id = $this->pdo->lastInsertId();
+
+            $object->setId((int)$id);
+            $object->setRight((int) $new_rgt);
+            $object->setLeft((int) $new_lft);
+           
+        } catch (\PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+
         if(!empty($object->rebuild) ) {
             $r = $object->rebuild;
 
-            dump($r);
-            dump("UPDATE categories SET id = $r WHERE id = $id");
+            //dump($r);
+            //dump("UPDATE categories SET id = $r WHERE id = $id");
            
             /*    $stmt = $this->pdo->prepare("UPDATE categories SET id = $r WHERE id = :id");
             $stmt->execute([':id' => $id]);  */

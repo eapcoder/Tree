@@ -113,6 +113,7 @@ class ObjectWatcher
     public function performOperations(): array
     {
         $return = [];
+       
         foreach ($this->dirty as $key => $obj) {
             $obj->getFinder()->update($obj);
         }
