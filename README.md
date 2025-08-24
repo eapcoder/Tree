@@ -1,8 +1,9 @@
 # Tree
 Tree nested lists
 # Description
-PHP class for build tree nested list and get it from sql table. Defaut table named `categories`.
+PHP class for build tree nested list and get it from sql table. Defaut table named `categories` 🚀.
 # Requireds
+8.0 - MySQL, SQLite3
 Tested in SQLite, Mysql
 ## Setup
 ```bash

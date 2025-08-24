@@ -21,14 +21,17 @@ class TreeMapper extends Mapper
     private \PDOStatement $selectStmt;
     private \PDOStatement $selectNullStmt;
     private \PDOStatement $selectByStmt;
-    public \PDOStatement $selectTreeStmt;
+    public  \PDOStatement $selectTreeStmt;
     private \PDOStatement $selectAllStmt;
     private \PDOStatement $updateStmt;
     private \PDOStatement $removeStmt;
     private \PDOStatement $updateParentStmt;
     private \PDOStatement $insertStmt;
     private \PDOStatement $selectSiblingsStmt;
-
+    private \PDOStatement $selectSinglePathStmt;
+    private \PDOStatement $selectPathWithDepthStmt;
+    private \PDOStatement $selectImmediateSubElementStmt;
+    
     private $parentId;
     public function __construct(private $table = 'categories', private $options = array())
     {
@@ -87,6 +90,31 @@ class TreeMapper extends Mapper
             )
             SELECT * FROM r ORDER by lft ASC;"
         );
+
+        $this->selectSinglePathStmt = $this->pdo->prepare(
+            "WITH RECURSIVE cte AS
+            (
+                SELECT name, parent_id FROM $table WHERE name=?
+                UNION ALL
+                SELECT c.name, c.parent_id FROM $table c JOIN cte
+                ON c.id=cte.parent_id # find parent
+            )
+            SELECT * FROM cte;");
+
+
+        $this->selectImmediateSubElementStmt = $this->pdo->prepare(
+            "WITH RECURSIVE cte AS
+            (
+                SELECT id, name, 0 as depth
+                FROM $table WHERE name=?
+                UNION ALL
+                SELECT c.id, c.name, cte.depth+1
+                FROM $table c JOIN cte 
+                ON cte.id=c.parent_id
+                WHERE cte.depth=0
+            )
+            SELECT * FROM cte;"
+            );
     }
 
     protected function targetClass(): string
@@ -180,15 +208,11 @@ class TreeMapper extends Mapper
     }
 
 
-    public function remove2(): int
-    {
-        return 123;
-    }
     public function updateParent(DomainObject $object, $current): void
     {
 
         $values = [$object->getParent(), $current->getId()];
-        dump($values);
+        
         $this->updateParentStmt->execute($values);
     }
 
@@ -196,6 +220,7 @@ class TreeMapper extends Mapper
     {
         return $this->selectStmt;
     }
+
 
     public function selectSiblingsStmt(): \PDOStatement
     {
@@ -227,6 +252,12 @@ class TreeMapper extends Mapper
     public function selectAllStmt(): \PDOStatement
     {
         return $this->selectAllStmt;
+    }
+
+    public function getSinglePath($name)
+    {
+        $this->selectSinglePathStmt->execute([$name]);
+        return $this->selectSinglePathStmt->fetchAll();
     }
 
     // test nested array
@@ -325,7 +356,7 @@ class TreeMapper extends Mapper
             $this->parentId = $id;
             $this->selectTreeStmt->execute([$id]);
             $raws =  $this->selectTreeStmt->fetchAll();
-            dump($raws);
+           
             foreach ($raws as $key => $raw) {
                 $raws[$key] = array_filter($raw, function ($key) {
                     return $key != '0' && $key != '1' && $key != '2';
@@ -416,11 +447,6 @@ class TreeMapper extends Mapper
         return $obj;
 
 
-        /* 
-        print '<br>$generateChilds >>>>' . PHP_EOL;
-        dump($obj);
-        print '<br>$generateChilds <<<<' . PHP_EOL; 
-        */
     }
 
     //TODO another way
@@ -438,4 +464,55 @@ class TreeMapper extends Mapper
         }
         return $branch;
     }
+
+
+    /**
+     * Finding the Depth of the Nodes
+     */
+
+    public function getPathWithDepth($id = null)
+    {
+        return $this->getPathWithDepthStmt($id)->fetchAll();
+        
+    }
+
+    public function getPathWithDepthStmt($id = null) {
+
+        $where = ($id) ? "WHERE id = ?" : '';
+        $table = $this->table;
+      
+        $selectPathWithDepthStmt = $this->pdo->prepare(
+            "WITH RECURSIVE cte AS
+            (
+            SELECT id, CAST(name AS CHAR(200)) AS name,
+                    CAST(id AS CHAR(200)) AS path,
+                    0 as depth
+            FROM $table WHERE parent_id IS NULL
+            UNION ALL
+            SELECT c.id,
+                    CONCAT(REPEAT(' ', cte.depth+1), c.name), # indentation
+                    CONCAT(cte.path, \",\", c.id),
+                    cte.depth+1
+            FROM $table c JOIN cte ON
+            cte.id=c.parent_id
+            )
+            SELECT * FROM cte $where ORDER BY path;"
+        );
+
+        
+        $selectPathWithDepthStmt->execute($id ? [$id] : null);
+        
+        return $selectPathWithDepthStmt;
+    }
+
+    /**
+     * Find the immediate subordinates of a node
+     */
+
+    public function selectImmediateSubElementStmt($name = null)
+    {
+        $this->selectImmediateSubElementStmt->execute([$name]);
+        return $this->selectImmediateSubElementStmt->fetchAll();
+    }
+
 }

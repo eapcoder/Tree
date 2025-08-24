@@ -176,9 +176,8 @@ class Runner extends SetupDb
     {
         self::setMysql();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(4);
-        //
-        $tree->remove();
+        $treeMapper->find(16)->remove();
+        
     }
 
     /**
@@ -206,12 +205,11 @@ class Runner extends SetupDb
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(16);
         $tree->moveUp();
- 
-        $tree = $treeMapper->find(16);
         $tree->moveUp();
-       
-        $tree = $treeMapper->find(4)->moveDown();
-        $tree = $treeMapper->find(4)->moveDown();
+
+        $four = $treeMapper->find(4);
+        $tree = $four->moveDown();
+        $tree = $four->moveDown();
 
 
         /*  $tree = $treeMapper->find(18);
@@ -220,7 +218,7 @@ class Runner extends SetupDb
 
 
     /**
-     * Find tree element and move it up in one level
+     * Retrieving a Single Path
      */
     public static function run12()
     {
@@ -228,10 +226,35 @@ class Runner extends SetupDb
         self::setMysql();
         //self::run5();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(4)->moveDown();
-
-        /*  $tree = $treeMapper->find(18);
-        $tree->moveLevelUp(); */
+        $path = $treeMapper->getSinglePath('2.3.1.1');
+        dump($path);
     }
+
+    /**
+     * Finding the Depth of the Nodes
+     */
+    public static function run13()
+    {
+        //self::run();
+        self::setMysql();
+        //self::run5();
+        $treeMapper = new TreeMapper();
+        $path = $treeMapper->getPathWithDepth(15);
+        dump($path);
+    }
+
+    /**
+     * Find the immediate subordinates of a node
+     */
+    public static function run14()
+    {
+        //self::run();
+        self::setMysql();
+        //self::run5();
+        $treeMapper = new TreeMapper();
+        $path = $treeMapper->selectImmediateSubElementStmt('Parent 1');
+        dump($path);
+    }
+
 }
 

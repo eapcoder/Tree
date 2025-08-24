@@ -90,11 +90,21 @@ trait TreeRebuilder
         $target_rgt = $object->getRight();
         $target_lft = $object->getLeft();
 
-        $this->pdo->exec("SET @width = $target_rgt - $target_lft + 1");
+        $reg = Registry::instance();
+
+       
+        if(preg_match('@sqlite\:@', $reg->getDSN())) {
+            $width =  $target_rgt - $target_lft + 1;
+         
+        } else {
+            $width = '@width';
+            $this->pdo->exec("SET @width = $target_rgt - $target_lft + 1");
+        }
+        
         // Shift lft and rgt values to make space
         $this->pdo->exec("DELETE FROM categories WHERE lft BETWEEN $target_lft AND $target_rgt");
-        $this->pdo->exec("UPDATE categories SET rgt = rgt - @width WHERE rgt > $target_rgt");
-        $this->pdo->exec("UPDATE categories SET lft = lft - @width WHERE lft > $target_rgt");
+        $this->pdo->exec("UPDATE categories SET rgt = rgt - $width WHERE rgt > $target_rgt");
+        $this->pdo->exec("UPDATE categories SET lft = lft - $width WHERE lft > $target_rgt");
 
     }
 
@@ -429,7 +439,7 @@ trait TreeRebuilder
 
         $items = [];
         $i = -1;
-        $childToRemove = [];
+
         foreach ($parent->getChilds() as $child) {
             array_push($items,$child);
         }
@@ -441,8 +451,7 @@ trait TreeRebuilder
           
            
             if ($id ==  $child->getId()) { // смена текущего с нижним элементом child
-               // dump($i);
-                //dump($child);
+ 
                 if ($i < count($parent->getChilds())-1) {
                     $movedChild = $child;
 
@@ -466,7 +475,7 @@ trait TreeRebuilder
                     if ($next->hasChilds()) {
                         $this->recursiveSetNewWeight($next, 0, 'down');
                     }
-                    dump($i);
+                   
                    
                 }
             } else { // присоединнеие остальных child
@@ -478,7 +487,7 @@ trait TreeRebuilder
             
         }
        
-        dump($items);
+      
         $this->recursiveUpdateNewWeight($items);
 
     }
