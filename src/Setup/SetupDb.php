@@ -18,7 +18,7 @@ class SetupDb {
         $options = parse_ini_file($config, true);
         Registry::reset();
         $reg = Registry::instance();
-        $conf = new Conf($options[$type]);
+        $conf = new Conf($options[$type] + $options['config']);
         $reg->setConf($conf);
         $dsn = $reg->getDSN();
 

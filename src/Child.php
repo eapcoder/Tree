@@ -20,20 +20,17 @@ class Child extends DomainObject
     public ?int $rebuildLft = 0;
     public ?int $rebuildRgt = 0;
     public ?int $parentRebuild = 0;
+    private int $parent_id;
+    private bool $exist = false;
 
-    public function __construct(int $id, private string $name, private int $parent_id, private ?int $lvl = null, private ?Tree $tree = null)
+    public function __construct(private string $name, private ?int $lvl = null, private ?Tree $tree = null)
     {
         
         $this->name = $name;
-        $this->parent_id = $parent_id;
-        
-        parent::__construct($id);
+                
+        parent::__construct();
         $this->tree = $tree;
     }
-
-    /* listing 13.27 */
-
-    // Space
 
     public function addChild(Child $child): void
     {
@@ -203,6 +200,17 @@ class Child extends DomainObject
     public function setParentRebuild($parentRebuild)
     {
         $this->parentRebuild = $parentRebuild;
+        return $this;
+    }
+
+    public function isExist(): bool
+    {
+        return $this->exist;
+    }
+
+    public function setExist($val)
+    {
+        $this->exist = $val;
         return $this;
     }
 

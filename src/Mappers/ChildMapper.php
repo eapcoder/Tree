@@ -68,9 +68,11 @@ class ChildMapper extends Mapper
     protected function doCreateObject(array $raw): Child
     { 
       
-        $obj = new Child((int)$raw['id'], $raw['name'], $raw['parent_id'],  $raw['lvl']);
+        $obj = new Child($raw['name'], $raw['lvl']); //This is add to $new array in ObjectObserver
+        $obj->setId((int)$raw['id']);
         $obj->setRight($raw['lft'] ?? null);
         $obj->setLeft($raw['rgt']  ?? null);
+        $obj->setExist(true);
      
          
         return $obj;

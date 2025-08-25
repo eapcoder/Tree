@@ -22,46 +22,49 @@ class Runner extends SetupDb
         self::setUp('mysql');
         $treeMapper = new TreeMapper();
 
-        $tree = new Tree(-1, "Parent 1");
+        $tree = new Tree("Parent 1");
         $treeMapper->insert($tree);
         $tree = $treeMapper->find(1); 
 
-        $ch1 = new Child(-1, 'Child 1 The Space Upstairs', $tree->getId());
+        $ch1 = new Child('Child 1 The Space Upstairs');
         $ch1->setName('Child 1 The Space');
     
-        $ch2 = new Child(-1, 'Child 2', $tree->getId());
-        $ch21 = new Child(-1, 'Child 2.1', $tree->getId());
+        $ch2 = new Child('Child 2');
+        $ch21 = new Child('Child 2.1');
         $ch2->addChild($ch21);
-        $ch22 = new Child(-1, 'Child 2.2', $tree->getId());
+        $ch22 = new Child('Child 2.2');
         $ch2->addChild($ch22);
 
-        $ch23 = new Child(-1, 'Child 2.3', $tree->getId());
-        $ch231 = new Child(-1, 'Child 2.3.1', $tree->getId());
+        $ch23 = new Child('Child 2.3');
+        $ch231 = new Child('Child 2.3.1');
         $ch23->addChild($ch231);
         $ch2->addChild($ch23);
         
         $ch1->addChild($ch2);
 
-        $ch3 = new Child(-1, 'Child 3', $tree->getId());
-        $ch31 = new Child(-1, 'Child 3.1', $tree->getId());
+        $ch3 = new Child('Child 3');
+        $ch31 = new Child('Child 3.1');
         $ch3->addChild($ch31);
-        $ch32 = new Child(-1, 'Child 3.2', $tree->getId());
+        $ch32 = new Child('Child 3.2');
         $ch3->addChild($ch32);
-        $ch33 = new Child(-1, 'Child 3.3', $tree->getId());
+        $ch33 = new Child('Child 3.3');
         $ch3->addChild($ch33);
         
         $ch1->addChild($ch3);
 
-        $ch4 = new Child(-1, 'Child 4', $tree->getId());
-        $ch41 = new Child(-1, 'Child 4.1', $tree->getId());
+        $ch4 = new Child('Child 4');
+        $ch41 = new Child('Child 4.1');
         $ch4->addChild($ch41);
-        $ch42 = new Child(-1, 'Child 4.2', $tree->getId());
+        $ch42 = new Child('Child 4.2');
         $ch4->addChild($ch42);
        
         $ch1->addChild($ch4);
 
         $tree->addChild($ch1);
-        
+
+        $ch5 = new Child('Child 5. The End');
+        $tree->addChild($ch5);
+
         $tree->save();
       
 
@@ -122,12 +125,12 @@ class Runner extends SetupDb
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(7);
       
-        $new = new Child(-1, 'Child 2.3.1.1', $tree->getId());
+        $new = new Child('Child 2.3.1.1');
         $tree->addChild($new);
         $tree->save();
 
         $tree = $treeMapper->find(3);
-        $new = new Child(-1, 'Child 2.4', $tree->getId());
+        $new = new Child('Child 2.4');
         $tree->addChild($new);
         $tree->save();
     }
@@ -205,7 +208,7 @@ class Runner extends SetupDb
         //self::setMysql();
         self::run5();
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(16);
+        $tree = $treeMapper->find(6);
         $tree->moveUp();
         $tree->moveUp();
 
@@ -214,10 +217,18 @@ class Runner extends SetupDb
         $tree = $four->moveDown();
         $tree = $four->moveDown();
 
+        ObjectWatcher::instance()->ClearNew();
         $childMapper = new ChildMapper();
-        $child = $childMapper->find(4);
-        $four->addChild($child);
-        $new = $four->save();
+        $child = clone $childMapper->find(4);
+        $child2 = clone $childMapper->find(4);
+       
+        
+        //dump(ObjectWatcher::instance()->getNew());
+        $four->addChildTest($child);
+        $four->addChildTest($child2);
+       
+        $new = $four->update();
+        
     }
 
 
@@ -260,5 +271,7 @@ class Runner extends SetupDb
         dump($path);
     }
 
+
+ 
 }
 

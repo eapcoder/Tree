@@ -283,6 +283,7 @@ trait TreeRebuilder
             $items[$i] = $child;
             if ($id ==  $child->getId()) { // смена текущего с верхним элементом child
                 if ($i > 1) {
+                    //dump($child);
                     $child->setRebuildLft($items[$i-1]->getLeft());
                     $child->setRebuildRgt(($child->getRight() - $child->getLeft()) + $items[$i-1]->getLeft());
                     $prev = $items[$i-1]; // меняем местами
@@ -292,10 +293,10 @@ trait TreeRebuilder
                     $prev->setRebuildRgt($items[$i]->getRight());
                     $items[$i] = $prev; // меняем местами
                     if($child->hasChilds()) {
-                        $this->recursiveSetNewWeight($child, 0, 'up');
+                        $this->recursiveSetNewWeight($child, 0, 'up', $child->getRight() - $child->getLeft());
                     }
                     if($prev->hasChilds()) {
-                        $this->recursiveSetNewWeight($prev, 0, 'up');
+                        $this->recursiveSetNewWeight($prev, 0, 'up', $child->getRight() - $child->getLeft());
                     }
                 }
             } else { // присоединнеие остальных child
@@ -316,23 +317,26 @@ trait TreeRebuilder
      * Обход рекурсивный дочерних элементов
      */
     
-    public function recursiveSetNewWeight(&$child, $i = 0, $upDown = null): Child
+    public function recursiveSetNewWeight(&$child, $i = 0, $upDown = null, $total = 0): Child
     {
         $i = $i ?? 0;
-       
+      
         if ($child->hasChilds()) {
-         
+          
             foreach ($child->getChilds() as $childInner) {
+              
+                $koef = ($total  > 1) ? 0 : -$i;
                 ++$i;
-                $up1 = $upDown == 'down' ? $i : $i;
-                $up2 = $upDown == 'up' ? $i + 1 : $i + 1;
-                
+                $up1 = $upDown == 'down' ? 1: $i + $koef;
+                $up2 = $upDown == 'up' ? $i : $i + 1;
                 $childInner->setParentRebuild($child->getRight() - $child->getLeft());
                 $childInner->setRebuildLft($child->getRebuildLft() + $up1);
-                $childInner->setRebuildRgt($child->getRebuildLft() + $up2);
+                $childInner->setRebuildRgt($child->getRebuildRgt() + -1);
+                
+
                
                 if ($childInner->hasChilds()) {
-                    $this->recursiveSetNewWeight($childInner, $i, $upDown);
+                    $this->recursiveSetNewWeight($childInner, $i, $upDown, count($childInner->getChilds()));
                 }
             }
         }

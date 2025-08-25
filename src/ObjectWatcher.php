@@ -59,6 +59,18 @@ class ObjectWatcher
         return $inst->all;
     }
 
+    public static function getNew(): ?array
+    {
+        $inst = self::instance();
+
+        return $inst->new;
+    }
+    public static function ClearNew(): ?array
+    {
+        $inst = self::instance();
+        return $inst->new = [];
+    }
+
     public static function exists($classname, $id): ?DomainObject
     {
         $inst = self::instance();
@@ -108,9 +120,10 @@ class ObjectWatcher
     }
     /**
      * Main function to insert child in tree structure
+     * $parent - only for update existing tree element
      * @return void
      */
-    public function performOperations(): array
+    public function performOperations($parent = null): array
     {
         $return = [];
        
@@ -118,16 +131,20 @@ class ObjectWatcher
             $obj->getFinder()->update($obj);
         }
         
+      
         $fitstId = $this->new[0]->getId() ?? null;
-        
-        foreach ($this->new as $key => $obj) {
+        dump($parent);
+      
+        foreach($this->new as $key => $obj) {
             
             if ($obj instanceof Tree) {
-                if($obj->getId() <= 0)
+               
                 $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getId());
+                
             } else {
+               
                 if ($obj->getId() <= 0)
-                $this->performOperationsForChilds($obj, $lvl = 1, $obj->getParent());
+                $this->performOperationsForChilds($obj, $lvl = 1, $parent ?? 1);
                 /* if ($obj->hasChilds()) {
                     $this->performOperationsForChilds($obj->getChilds(), $lvl = 1, $obj->getParent());
 
@@ -151,51 +168,42 @@ class ObjectWatcher
         return $return;
     }
     
-    protected function rebuild($fitstId): void
-    {
-        $tree = $this->new[0]->getFinder()->getTree($fitstId);
-      
-        if($tree->hasChilds()) {
-            $this->generate($tree);
-        }
-           
-       
-        
-    }
 
     public function performOperationsForChilds($childs, $lvl, $parent_id): void
     {
         if ($childs instanceof Child) {
-         
-            $lvl = $lvl + 1;
-            //if($childs->rebuild) $childs->setId($childs->rebuild);
-            $childs->setLvl($lvl);
-            $childs->setParent($parent_id);
-            $childs->getFinder()->insert($childs);
+           
+            if(!$childs->isExist()) {
+                
+                $lvl = $lvl + 1;
+                //if($childs->rebuild) $childs->setId($childs->rebuild);
+                $childs->setLvl($lvl);
+      
+                $childs->setParent($parent_id);
+                $childs->getFinder()->insert($childs);
+            } else {
+          
+               
+            }
             
             if($childs->hasChilds()) $this->performOperationsForChilds($childs->getChilds(), $lvl, $childs->getId());
-        } else {
+        } else { // Tree\Collection\ChildCollection
+            
             foreach ($childs as $child) {
                 //dump($child->getChilds());
                 $this->performOperationsForChilds($child, $lvl, $parent_id);
             }
         }
         
-/* 
-        
-        if ($childs instanceof Child) {
-            $childs->setLvl($lvl);
-            $childs->getFinder()->insert($childs);
-        } else {
 
-            
-
-            foreach ($childs as $child) {
-                
-                $this->performOperationsForChilds($child, $lvl);
-            }
-        } */
     }
 
-    /* /listing 13.24 */
+    protected function rebuild($fitstId): void
+    {
+        $tree = $this->new[0]->getFinder()->getTree($fitstId);
+
+        if ($tree->hasChilds()) {
+            $this->generate($tree);
+        }
+    }
 }

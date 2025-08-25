@@ -14,9 +14,9 @@ class Tree extends DomainObject
     private ?bool $hasChild = false;
     
     
-    public function __construct(int $id, private string $name, private int|null $parent_id = null, private int $lft = 0, private int  $rgt = 0, private $lvl = null)
+    public function __construct(private string $name, private int|null $parent_id = null, private int $lft = 0, private int  $rgt = 0, private $lvl = null)
     {
-        parent::__construct($id);
+        parent::__construct();
     }
 
 
@@ -49,6 +49,14 @@ class Tree extends DomainObject
         $child->setTree($this);
         $this->hasChild = true;
        
+    }
+
+    public function addChildTest(Child $child): void
+    {
+
+        $this->getChilds()->add($child);
+        $child->setTree($this);
+        $this->hasChild = true;
     }
 
     // Tree
@@ -98,10 +106,32 @@ class Tree extends DomainObject
 
     public function save()
     {
+        if($this) {
 
+        }
+        
         return ObjectWatcher::instance()->performOperations();
         
         
+    }
+
+
+    public function update()
+    {
+
+       
+        foreach($this->getChilds() as $key => $child) {
+            $child->setId(-1);
+            $child->setParent($this->getId());
+            $child->setExist(false);
+            ObjectWatcher::instance()->addNew($child);
+            
+        }
+
+        $news = ObjectWatcher::instance()->getNew();
+        dump($news[0] == $news[1]);
+       dump(ObjectWatcher::instance()->getNew());
+        return ObjectWatcher::instance()->performOperations($this->getId());
     }
 
     public function moveLevelUp(): mixed

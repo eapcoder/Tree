@@ -38,9 +38,9 @@ abstract class Mapper
         if (! is_array($raw) || ! isset($raw['id'])) {
            throw new AppException('Sql record not fonud');
         }
-        
-        $object = $this->createObject($raw);
        
+        $object = $this->createObject($raw);
+   
      
         return $object;
     }

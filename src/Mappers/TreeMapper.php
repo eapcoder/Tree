@@ -130,16 +130,16 @@ class TreeMapper extends Mapper
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
 
-        $obj = new Tree((int)$array['id'], $array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
-       
+        $obj = new Tree($array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
+        $obj->setId((int)$array['id']); 
        
        
         if ($withChild) {
             $childMapper = new ChildMapper();
             $child = $childMapper->findByTree($array['id']);
-
+          
             if ($child) {
-
+                $child->setExist(true);
                 $obj->addChild($child);
             }
         }
@@ -425,7 +425,9 @@ class TreeMapper extends Mapper
             }  */
 
         
-            $child = new Child($rawchild['id'], $rawchild['name'], $rawchild['parent_id'], $rawchild['lvl']);
+            $child = new Child($rawchild['name'], $rawchild['lvl']);
+            $child->setParent($rawchild['parent_id']);
+            $child->setId($rawchild['id']);
             $child->setRight($rawchild['rgt'] ?? null);
             $child->setLeft($rawchild['lft'] ?? null);
            
