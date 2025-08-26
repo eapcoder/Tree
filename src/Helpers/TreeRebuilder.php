@@ -497,5 +497,13 @@ trait TreeRebuilder
     }
 
 
+    /**
+     * Insert after node 
+     */
+    public function insertAfrer($object, $id) {
+        dump($object);
+        dump($id);
+    }
+
 
 }

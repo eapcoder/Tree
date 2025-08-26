@@ -219,13 +219,11 @@ class Runner extends SetupDb
 
         ObjectWatcher::instance()->ClearNew();
         $childMapper = new ChildMapper();
-        $child = clone $childMapper->find(4);
-        $child2 = clone $childMapper->find(4);
-       
+        $child = $childMapper->find(4); 
         
         //dump(ObjectWatcher::instance()->getNew());
         $four->addChildTest($child);
-        $four->addChildTest($child2);
+        $four->addChildTest($child);
        
         $new = $four->update();
         
@@ -271,6 +269,18 @@ class Runner extends SetupDb
         dump($path);
     }
 
+    /**
+     * Find child copy and insert after some node
+     */
+    public static function run15()
+    {
+        self::run();
+        self::run5();
+
+        $treeMapper = new TreeMapper();
+        $tree = $treeMapper->find(4);
+        $tree->insertAfrer(17);
+    }
 
  
 }

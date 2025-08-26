@@ -133,7 +133,7 @@ class ObjectWatcher
         
       
         $fitstId = $this->new[0]->getId() ?? null;
-        dump($parent);
+       
       
         foreach($this->new as $key => $obj) {
             

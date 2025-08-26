@@ -119,24 +119,32 @@ class Tree extends DomainObject
     public function update()
     {
 
-       
+        
         foreach($this->getChilds() as $key => $child) {
+
             $child->setId(-1);
+           
             $child->setParent($this->getId());
             $child->setExist(false);
-            ObjectWatcher::instance()->addNew($child);
+            ObjectWatcher::instance()->addClean($child);
+            $newClone = clone $child;
+            ObjectWatcher::instance()->addNew($newClone);
+            
             
         }
-
-        $news = ObjectWatcher::instance()->getNew();
-        dump($news[0] == $news[1]);
-       dump(ObjectWatcher::instance()->getNew());
+      
+       
         return ObjectWatcher::instance()->performOperations($this->getId());
     }
 
     public function moveLevelUp(): mixed
     {
         return $this->getFinder()->moveLevelUp($this);
+    }
+
+    public function insertAfrer($id): void
+    {
+        $this->getFinder()->insertAfrer($this, $id);
     }
 
 
@@ -167,6 +175,7 @@ class Tree extends DomainObject
         
         
     }
+
 
 
     public function up(): void

@@ -130,9 +130,10 @@ class TreeMapper extends Mapper
     protected function doCreateObject(array $array, $withChild = true): Tree
     {
 
-        $obj = new Tree($array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']);
-        $obj->setId((int)$array['id']); 
-       
+        $obj = new Tree($array['name'], $array['parent_id'], $array['lft'], $array['rgt'], $array['lvl']); //This  add item to $new array in ObjectObserver
+        $obj->setId((int)$array['id']);
+      
+      
        
         if ($withChild) {
             $childMapper = new ChildMapper();
