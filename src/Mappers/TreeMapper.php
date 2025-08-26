@@ -354,6 +354,7 @@ class TreeMapper extends Mapper
 
 
         } else {
+          
             $this->parentId = $id;
             $this->selectTreeStmt->execute([$id]);
             $raws =  $this->selectTreeStmt->fetchAll();
@@ -370,7 +371,7 @@ class TreeMapper extends Mapper
         //ksort($raws);
 
 
-       
+        
         $this->makeParentChildRelations($raws, $parentChild);
         
         if (isset($this->options['html']) && $this->options['html'] === true) {

@@ -451,8 +451,7 @@ trait TreeRebuilder
         foreach ($items as $child) {
 
             ++$i;
-
-          
+  
            
             if ($id ==  $child->getId()) { // смена текущего с нижним элементом child
  
@@ -498,12 +497,90 @@ trait TreeRebuilder
 
 
     /**
-     * Insert after node 
+     * Insert after some node 
      */
-    public function insertAfrer($object, $id) {
-        dump($object);
-        dump($id);
+    public function insertAfter($object, $newNode,  $id) {
+            
+        $afterNode = $this->find($id);
+        $newNode->setParent($afterNode->getParent());
+        $newNode->setLvl($afterNode->getLvl());
+   
+        $parent_rgt = $afterNode->getRight();
+      
+        // Insert the new node
+        $new_lft = $parent_rgt + 1;
+
+        $total = count($newNode->getChilds());
+        $totalR = $this->recursiveGetTotal($newNode->getChilds(), $total);
+     
+        $new_rgt = $parent_rgt + 2 + $totalR * 2;
+              
+        $values = [$newNode->getName(), $newNode->getParent(), $newNode->getLvl(), $new_lft, $new_rgt];
+        
+        $this->pdo->prepare(
+            "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
+        )->execute($values);
+
+        $id = $this->pdo->lastInsertId();
+
+     
+        $this->pdo->exec("UPDATE categories SET rgt = rgt + $new_rgt - $new_lft+1 WHERE rgt >= $new_lft AND id != $id");
+        $this->pdo->exec("UPDATE categories SET lft = lft + $new_rgt - $new_lft+1 WHERE lft >= $new_lft AND id != $id");
+
+        if ($newNode->hasChilds()) {
+            $this->recursiveUpdateNewWeightAfterInsert($newNode->getChilds(), $new_lft, $new_rgt, $id, $newNode->getLvl(), true);
+        }
+       
+
     }
 
+    /**
+     * Рекурсивное обновление дочерних элементов
+     */
+    public function recursiveUpdateNewWeightAfterInsert($items, $nlft, $nrgt, $parent_id, $lvl, $init = false)
+    {
+        
+        $i = 0;
+        foreach ($items as $item) {
+            ++$i;
+        
+            $t = 0;
+            if($item->hasChilds()) {
+                $t = count($item->getChilds()) * 2;
+                $nlft = $nlft + 1;
+                $nrgt = $nlft + $t + 1;
+            } else{
+                $nlft = ($i == 1) ? $nlft + 1 : $nrgt + 1;
+                $nrgt = $nlft + 1;
+            }
+            
+
+            $values = [$item->getName(), $parent_id, $lvl, $nlft, $nrgt];
+            $this->pdo->prepare(
+                "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
+            )->execute($values);
+            $id = $this->pdo->lastInsertId();
+            if ($item->hasChilds()) {
+                $this->recursiveUpdateNewWeightAfterInsert($item->getChilds(), $nlft, $nrgt, $id, $lvl + 1);
+            }
+           
+        }
+
+        return $items;
+    }
+
+    public function recursiveGetTotal($items, &$total)
+    {
+        
+
+        foreach ($items as $item) {
+            if ($item->hasChilds()) {
+                $total = $total + count($item->getChilds());
+                $this->recursiveGetTotal($item->getChilds(), $total);
+            }
+        }
+
+        return $total;
+    }
 
 }

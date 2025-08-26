@@ -279,7 +279,21 @@ class Runner extends SetupDb
 
         $treeMapper = new TreeMapper();
         $tree = $treeMapper->find(4);
-        $tree->insertAfrer(17);
+
+        $new = new Child('Child after 2.4');
+        $after = new Child('Child after after 2.4');
+        $after2 = new Child('Child after after after 2.4');
+        $after3 = new Child('Child after after after 3');
+        $after4 = new Child('Child after after after 4');
+        $after5 = new Child('Child after after after 5');
+        $after->addChild($after2);
+        $after->addChild($after3);
+        $after->addChild($after4);
+        $after->addChild($after5);
+        $new->addChild($after);
+
+        $tree->insertAfter($new, 5);
+
     }
 
  

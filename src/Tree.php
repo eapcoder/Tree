@@ -142,9 +142,9 @@ class Tree extends DomainObject
         return $this->getFinder()->moveLevelUp($this);
     }
 
-    public function insertAfrer($id): void
+    public function insertAfter($newNode, $id): void
     {
-        $this->getFinder()->insertAfrer($this, $id);
+        $this->getFinder()->insertAfter($this, $newNode,  $id);
     }
 
 
