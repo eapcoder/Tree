@@ -124,3 +124,41 @@ File Runner contain examples moving child element (example 10 and 11):
         */
     }
 ```
+
+## Moving element
+Find child and insert after some node (example 15):
+
+```php
+
+    /**
+     * Find child and insert after some node
+     */
+    public static function run15()
+    {
+        self::run();
+        self::run5();
+
+        $treeMapper = new TreeMapper();
+        $old = $treeMapper->find(6);
+        
+           
+        $new = new Child('Child after 2.4');
+
+        $after = new Child('Child after after 2.4');
+        $after2 = new Child('Child after after after 2.4');
+        $after3 = new Child('Child after after after 3');
+        $after4 = new Child('Child after after after 4');
+        $after5 = new Child('Child after after after 5');
+        $after->addChild($after2);
+        $after->addChild($after3);
+        $after->addChild($after4);
+        $after->addChild($after5); 
+        $new->addChild($after);
+        $treeMapper->insertAfter($new, 4);
+
+     
+        $treeMapper->insertAfter($old, 4);
+        dump($old);
+        $old->remove();
+    }
+```

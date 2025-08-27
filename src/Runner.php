@@ -278,9 +278,11 @@ class Runner extends SetupDb
         self::run5();
 
         $treeMapper = new TreeMapper();
-        $tree = $treeMapper->find(4);
-
+        $old = $treeMapper->find(6);
+        
+           
         $new = new Child('Child after 2.4');
+
         $after = new Child('Child after after 2.4');
         $after2 = new Child('Child after after after 2.4');
         $after3 = new Child('Child after after after 3');
@@ -289,11 +291,14 @@ class Runner extends SetupDb
         $after->addChild($after2);
         $after->addChild($after3);
         $after->addChild($after4);
-        $after->addChild($after5);
+        $after->addChild($after5); 
         $new->addChild($after);
+        $treeMapper->insertAfter($new, 4);
 
-        $tree->insertAfter($new, 5);
-
+     
+        $treeMapper->insertAfter($old, 4);
+        dump($old);
+        $old->remove();
     }
 
  

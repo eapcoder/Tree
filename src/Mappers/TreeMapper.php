@@ -320,7 +320,11 @@ class TreeMapper extends Mapper
         }
     }
 
-
+    /**
+     * 
+     * 
+     */
+    
     public function getTree($id = null)
     {
         if (empty($id)) {
@@ -517,6 +521,16 @@ class TreeMapper extends Mapper
     {
         $this->selectImmediateSubElementStmt->execute([$name]);
         return $this->selectImmediateSubElementStmt->fetchAll();
+    }
+
+    public function insertAfter($newNode, $id): void
+    {
+        $this->insertAfterNode($this, $newNode,  $id);
+    }
+
+    public function insertBefore($newNode, $id): void
+    {
+        $this->insertBeforeNode($this, $newNode,  $id);
     }
 
 }

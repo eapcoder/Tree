@@ -8,8 +8,10 @@ use Tree\Child;
 use Tree\Conf\Conf;
 use Tree\Conf\Registry;
 use Tree\Exception\AppException;
+use Tree\Mappers\ChildMapper;
 use Tree\Mappers\Mapper;
 use Tree\Mappers\TreeMapper;
+use Tree\ObjectWatcher;
 use Tree\Tree;
 
 trait TreeRebuilder
@@ -89,7 +91,7 @@ trait TreeRebuilder
         
         $target_rgt = $object->getRight();
         $target_lft = $object->getLeft();
-
+        
         $reg = Registry::instance();
 
        
@@ -499,9 +501,18 @@ trait TreeRebuilder
     /**
      * Insert after some node 
      */
-    public function insertAfter($object, $newNode,  $id) {
+    public function insertAfterNode($object, $newNode,  $id) 
+    {
             
         $afterNode = $this->find($id);
+        if($newNode instanceof Tree) {
+            $tree = $this->getTree($newNode->getId());
+           // dump($tree);
+           
+            $childMapper = new ChildMapper();
+            $newNode = $childMapper->find($newNode->getId());
+           // dump($newNode);
+        }
         $newNode->setParent($afterNode->getParent());
         $newNode->setLvl($afterNode->getLvl());
    
@@ -510,9 +521,16 @@ trait TreeRebuilder
         // Insert the new node
         $new_lft = $parent_rgt + 1;
 
-        $total = count($newNode->getChilds());
-        $totalR = $this->recursiveGetTotal($newNode->getChilds(), $total);
-     
+        if ($tree instanceof Tree) {
+            $total = count($tree->getChilds());
+            $totalR = $this->recursiveGetTotal($tree->getChilds(), $total);
+            
+        } else {
+            $total = count($newNode->getChilds());
+            $totalR = $this->recursiveGetTotal($newNode->getChilds(), $total);
+        }
+        
+       
         $new_rgt = $parent_rgt + 2 + $totalR * 2;
               
         $values = [$newNode->getName(), $newNode->getParent(), $newNode->getLvl(), $new_lft, $new_rgt];
@@ -527,11 +545,34 @@ trait TreeRebuilder
         $this->pdo->exec("UPDATE categories SET rgt = rgt + $new_rgt - $new_lft+1 WHERE rgt >= $new_lft AND id != $id");
         $this->pdo->exec("UPDATE categories SET lft = lft + $new_rgt - $new_lft+1 WHERE lft >= $new_lft AND id != $id");
 
-        if ($newNode->hasChilds()) {
-            $this->recursiveUpdateNewWeightAfterInsert($newNode->getChilds(), $new_lft, $new_rgt, $id, $newNode->getLvl(), true);
+        if ($newNode->hasChilds() || $tree->getChilds()) {
+            $childs = (!empty($newNode->hasChilds())) ? $newNode->getChilds() : $tree->getChilds();
+           
+            $this->recursiveUpdateNewWeightAfterInsert($childs, $new_lft, $new_rgt, $id, $newNode->getLvl(), true);
+        }
+
+       
+        // Create a ReflectionClass object for MyClass
+        $reflectionClass = new \ReflectionClass($newNode);
+
+        // Get the name of the class
+        $className = $reflectionClass->getName();
+       
+        if(ObjectWatcher::exists(
+            $className,
+            $newNode->getId()
+        )) {
+            $afterNode = $this->find($newNode->getId());
+            $p = $this->pdo->prepare("SELECT * FROM categories WHERE id = ?");
+            $p->execute([$newNode->getId()]);
+            $old = $p->fetch();
+
+            $afterNode->setRight($old['rgt']);
+            $afterNode->setLeft($old['lft']);
+                     
+            
         }
        
-
     }
 
     /**
@@ -541,9 +582,10 @@ trait TreeRebuilder
     {
         
         $i = 0;
+        
         foreach ($items as $item) {
             ++$i;
-        
+           
             $t = 0;
             if($item->hasChilds()) {
                 $t = count($item->getChilds()) * 2;
@@ -581,6 +623,44 @@ trait TreeRebuilder
         }
 
         return $total;
+    }
+
+
+    /**
+     * Insert after some node 
+     */
+    public function insertBeforeNode($object, $newNode,  $id)
+    {
+
+        $beforerNode = $this->find($id);
+        $newNode->setParent($beforerNode->getParent());
+        $newNode->setLvl($beforerNode->getLvl());
+
+        $parent_rgt = $beforerNode->getRight();
+
+        // Insert the new node
+        $new_lft = $parent_rgt - 1;
+
+        $total = count($newNode->getChilds());
+        $totalR = $this->recursiveGetTotal($newNode->getChilds(), $total);
+
+        $new_rgt = $parent_rgt + $totalR * 2;
+
+        $values = [$newNode->getName(), $newNode->getParent(), $newNode->getLvl(), $new_lft, $new_rgt];
+
+        $this->pdo->prepare(
+            "INSERT into categories ( name, parent_id, lvl, lft, rgt ) VALUES( ?, ?, ?, ?, ?)"
+        )->execute($values);
+
+        $id = $this->pdo->lastInsertId();
+
+
+        $this->pdo->exec("UPDATE categories SET rgt = rgt + $new_rgt - $new_lft+1 WHERE rgt >= $new_lft AND id != $id");
+        $this->pdo->exec("UPDATE categories SET lft = lft + $new_rgt - $new_lft+1 WHERE lft >= $new_lft AND id != $id");
+
+        if ($newNode->hasChilds()) {
+            $this->recursiveUpdateNewWeightAfterInsert($newNode->getChilds(), $new_lft, $new_rgt, $id, $newNode->getLvl(), true);
+        }
     }
 
 }
